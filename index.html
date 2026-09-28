@@ -85,7 +85,7 @@
       border: none;
       background: transparent;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #6c757d;
       cursor: pointer;
@@ -373,9 +373,9 @@
 
     <!-- Difficulty Selector -->
     <div class="difficulty-bar">
-      <button class="diff-btn" data-mode="easy">EASY</button>
-      <button class="diff-btn active" data-mode="medium">MEDIUM</button>
-      <button class="diff-btn" data-mode="hard">HARD</button>
+      <button class="diff-btn" data-mode="easy">Warm up</button>
+      <button class="diff-btn active" data-mode="medium">Getting going</button>
+      <button class="diff-btn" data-mode="hard">Challenge me</button>
     </div>
 
     <div class="message" id="message"></div>
@@ -470,31 +470,70 @@
       };
     }
 
+    // Evaluates built expression safely respecting standard order of operations
+    function computeExpression(template, digits, blankIndices) {
+      let exprStr = '';
+      let digitIdx = 0;
+      
+      template.forEach((token, i) => {
+        if (token === '=') return;
+        if (blankIndices.includes(i)) {
+          exprStr += digits[digitIdx++];
+        } else {
+          if (token === '×') exprStr += ' * ';
+          else if (token === '+') exprStr += ' + ';
+          else if (token === '-') exprStr += ' - ';
+          else exprStr += token;
+        }
+      });
+
+      try {
+        return Function(`"use strict"; return (${exprStr})`)();
+      } catch {
+        return null;
+      }
+    }
+
     function generateDailyPuzzles() {
       const seed = getTodaySeed();
+      const opsPool = ['+', '-', '×'];
 
-      // EASY
+      // --- WARM UP (3 Digits, 2 Operations) ---
       const randEasy = createRandom(seed + 100);
+      const opE1 = opsPool[Math.floor(randEasy() * opsPool.length)];
+      const opE2 = opsPool[Math.floor(randEasy() * opsPool.length)];
       const dE = [
         Math.floor(randEasy() * 8) + 1,
         Math.floor(randEasy() * 8) + 1, 
         Math.floor(randEasy() * 8) + 1
       ].map(String);
-      const targetEasy = parseInt(dE[0]) + (parseInt(dE[1]) * parseInt(dE[2]));
+      
+      const templateEasy = ['', opE1, '', opE2, ''];
+      const blankIndicesEasy = [0, 2, 4];
+      const targetEasy = computeExpression(templateEasy, dE, blankIndicesEasy);
+      templateEasy.push('=', String(targetEasy));
 
-      // MEDIUM
+      // --- GETTING GOING (4 Digits [2-digit + 2 single digits], 2 Operations) ---
       const randMed = createRandom(seed + 200);
+      const opM1 = opsPool[Math.floor(randMed() * opsPool.length)];
+      const opM2 = opsPool[Math.floor(randMed() * opsPool.length)];
       const dM = [
         Math.floor(randMed() * 3) + 1,
         Math.floor(randMed() * 9) + 1,
         Math.floor(randMed() * 8) + 1,
         Math.floor(randMed() * 8) + 1
       ].map(String);
-      const valM1 = parseInt(dM[0] + dM[1]);
-      const targetMed = valM1 + (parseInt(dM[2]) * parseInt(dM[3]));
 
-      // HARD
+      const templateMed = ['', '', opM1, '', opM2, ''];
+      const blankIndicesMed = [0, 1, 3, 5];
+      const targetMed = computeExpression(templateMed, dM, blankIndicesMed);
+      templateMed.push('=', String(targetMed));
+
+      // --- CHALLENGE ME (5 Digits, 3 Operations) ---
       const randHard = createRandom(seed + 300);
+      const opH1 = opsPool[Math.floor(randHard() * opsPool.length)];
+      const opH2 = opsPool[Math.floor(randHard() * opsPool.length)];
+      const opH3 = opsPool[Math.floor(randHard() * opsPool.length)];
       const dH = [
         Math.floor(randHard() * 3) + 1,
         Math.floor(randHard() * 9) + 1,
@@ -503,30 +542,29 @@
         Math.floor(randHard() * 9) + 1
       ].map(String);
 
-      const valH1 = parseInt(dH[0] + dH[1]);
-      const targetHard = valH1 + (parseInt(dH[2]) * parseInt(dH[3])) - parseInt(dH[4]);
+      const templateHard = ['', '', opH1, '', opH2, '', opH3, ''];
+      const blankIndicesHard = [0, 1, 3, 5, 7];
+      const targetHard = computeExpression(templateHard, dH, blankIndicesHard);
+      templateHard.push('=', String(targetHard));
 
       return {
         easy: {
           target: targetEasy,
-          template: ['', '+', '', '×', '', '=', String(targetEasy)],
-          blankIndices: [0, 2, 4],
-          secretDigits: dE,
-          buildExpr: (d) => `${d[0]} + ${d[1]} * ${d[2]}`
+          template: templateEasy,
+          blankIndices: blankIndicesEasy,
+          secretDigits: dE
         },
         medium: {
           target: targetMed,
-          template: ['', '', '+', '', '×', '', '=', String(targetMed)],
-          blankIndices: [0, 1, 3, 5],
-          secretDigits: dM,
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]}`
+          template: templateMed,
+          blankIndices: blankIndicesMed,
+          secretDigits: dM
         },
         hard: {
           target: targetHard,
-          template: ['', '', '+', '', '×', '', '-', '', '=', String(targetHard)],
-          blankIndices: [0, 1, 3, 5, 7],
-          secretDigits: dH,
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]} - ${d[4]}`
+          template: templateHard,
+          blankIndices: blankIndicesHard,
+          secretDigits: dH
         }
       };
     }
@@ -806,15 +844,6 @@
       }
     }
 
-    function evaluateExpression(digits, config) {
-      const expr = config.buildExpr(digits);
-      try {
-        return Function(`"use strict"; return (${expr})`)();
-      } catch {
-        return null;
-      }
-    }
-
     function submitGuess() {
       const state = gameStates[currentMode];
       const config = DIFFICULTIES[currentMode];
@@ -829,7 +858,7 @@
         return;
       }
 
-      const result = evaluateExpression(state.currentInput, config);
+      const result = computeExpression(config.template, state.currentInput, config.blankIndices);
       if (result !== config.target) {
         state.message = `Equals ${result}, but target is ${config.target}!`;
         state.messageColor = '#dc3545';
