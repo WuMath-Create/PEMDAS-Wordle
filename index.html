@@ -211,6 +211,10 @@
       letter-spacing: 0.5px;
     }
 
+    .key.correct { background: #6aaa64; color: #fff; }
+    .key.present { background: #c9b458; color: #fff; }
+    .key.absent  { background: #787c7e; color: #fff; }
+
     /* Footer Metrics */
     .footer {
       display: flex;
@@ -272,6 +276,47 @@
       min-height: 18px;
       margin-bottom: 10px;
       color: #dc3545;
+    }
+
+    /* Order-of-operations working, one line per step */
+    .steps {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #495057;
+      margin: -4px 0 10px;
+    }
+
+    .steps:empty {
+      display: none;
+    }
+
+    .steps .hl {
+      background: #fff3cd;
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-weight: 700;
+    }
+
+    .steps .arrow {
+      color: #adb5bd;
+      margin: 0 2px;
+    }
+
+    /* How to Play */
+    .help-body p,
+    .help-body li {
+      font-size: 14px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .help-body ul {
+      padding-left: 18px;
+    }
+
+    .help-body .row {
+      margin: 10px 0;
     }
 
     /* Statistics Modal */
@@ -387,6 +432,7 @@
     <div class="header">
       <h1>PEMDAS Wordle</h1>
       <div class="header-actions">
+        <button class="icon-btn" id="help-btn" title="How to play">?</button>
         <button class="icon-btn" id="stats-btn" title="Statistics">📊</button>
         <button class="icon-btn" id="skip-btn" title="Skip to another puzzle">⏭</button>
         <button class="icon-btn" id="giveup-btn" title="Give up — show the answer">🏳</button>
@@ -401,6 +447,7 @@
     </div>
 
     <div class="message" id="message"></div>
+    <div class="steps" id="steps"></div>
 
     <div class="grid" id="grid"></div>
 
@@ -474,6 +521,28 @@
         <div id="distribution-container"></div>
       </div>
     </div>
+
+    <!-- How to Play Modal -->
+    <div class="modal-overlay" id="help-overlay">
+      <div class="modal-content help-body">
+        <div class="modal-header">
+          <div class="modal-title">HOW TO PLAY</div>
+          <button class="close-btn" id="close-help">&times;</button>
+        </div>
+        <p>Fill in the blanks with digits to find the hidden equation. You get 6 tries.</p>
+        <p><b>Every guess has to be true.</b> It must actually equal the target, so remember the order of operations: multiply before you add or subtract. If a guess misses, you'll see how it works out step by step.</p>
+        <p>After each guess, the tiles change color. Say the hidden equation is 18 + 2 × 3 = 24 and you guess:</p>
+        <div class="row">
+          <div class="tile correct">1</div><div class="tile present">2</div><div class="tile operator">+</div><div class="tile present">3</div><div class="tile operator">×</div><div class="tile absent">4</div><div class="tile operator">=</div><div class="tile operator">24</div>
+        </div>
+        <ul>
+          <li><b>Green:</b> the 1 is right, in the right spot.</li>
+          <li><b>Yellow:</b> 2 and 3 are in the equation, but in other spots.</li>
+          <li><b>Gray:</b> there's no 4.</li>
+        </ul>
+        <p>⏭ skips to a new puzzle, 🏳 gives up and shows the answer, and clicking the target lets you pick your own. Only the daily puzzle counts toward your stats. New puzzles every midnight (Eastern).</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -539,24 +608,21 @@
           template: ['', '+', '', '×', '', '=', String(targetEasy)],
           blankIndices: [0, 2, 4],
           secretDigits: dE,
-          digitRanges: [[1, 8], [1, 8], [1, 8]],
-          buildExpr: (d) => `${d[0]} + ${d[1]} * ${d[2]}`
+          digitRanges: [[1, 8], [1, 8], [1, 8]]
         },
         medium: {
           target: targetMed,
           template: ['', '', '+', '', '×', '', '=', String(targetMed)],
           blankIndices: [0, 1, 3, 5],
           secretDigits: dM,
-          digitRanges: [[1, 3], [1, 9], [1, 8], [1, 8]],
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]}`
+          digitRanges: [[1, 3], [1, 9], [1, 8], [1, 8]]
         },
         hard: {
           target: targetHard,
           template: ['', '', '+', '', '×', '', '-', '', '=', String(targetHard)],
           blankIndices: [0, 1, 3, 5, 7],
           secretDigits: dH,
-          digitRanges: [[1, 3], [1, 9], [1, 8], [1, 8], [1, 9]],
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]} - ${d[4]}`
+          digitRanges: [[1, 3], [1, 9], [1, 8], [1, 8], [1, 9]]
         }
       };
     }
@@ -603,47 +669,55 @@
     const puzzleOffset = { easy: 0, medium: 0, hard: 0 };
     const customTarget = { easy: false, medium: false, hard: false };
 
-    function checkDailyReset() {
-      const todaySeed = getTodaySeed();
-      const lastPlayedDate = localStorage.getItem('pemdas_wordle_last_date');
-      
-      if (lastPlayedDate !== String(todaySeed)) {
-        localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-      }
+    // Only today's puzzle (not a skipped or custom one) is saved and counts toward stats
+    function isDaily() {
+      return puzzleOffset[currentMode] === 0 && !customTarget[currentMode];
+    }
+
+    function newGameState() {
+      return {
+        submittedGuesses: [],
+        currentInput: [],
+        selectedIndex: 0,
+        isGameOver: false,
+        revealed: false,
+        message: '',
+        messageColor: '#dc3545',
+        steps: []
+      };
     }
 
     const gameStates = {
-      easy: {
-        submittedGuesses: [],
-        currentInput: [], 
-        selectedIndex: 0, 
-        isGameOver: false,
-        revealed: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      medium: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        revealed: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      hard: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        revealed: false,
-        message: '',
-        messageColor: '#dc3545'
-      }
+      easy: newGameState(),
+      medium: newGameState(),
+      hard: newGameState()
     };
+
+    // Today's daily-puzzle progress survives a reload, so the board can't be wiped and replayed
+    const PROGRESS_KEY = 'pemdas_wordle_progress';
+
+    function saveProgress() {
+      if (!isDaily()) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+        const data = saved && saved.date === getTodaySeed() ? saved : { date: getTodaySeed(), modes: {} };
+        const { currentInput, selectedIndex, ...rest } = gameStates[currentMode];
+        data.modes[currentMode] = rest;
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
+      } catch {}
+    }
+
+    function loadProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+        if (!saved || saved.date !== getTodaySeed()) return;
+        Object.entries(saved.modes).forEach(([mode, s]) => Object.assign(gameStates[mode], s));
+      } catch {}
+    }
 
     const gridEl = document.getElementById('grid');
     const messageEl = document.getElementById('message');
+    const stepsEl = document.getElementById('steps');
     const targetDisplay = document.getElementById('target-display');
     const attemptsDisplay = document.getElementById('attempts-display');
     const skipBtn = document.getElementById('skip-btn');
@@ -653,6 +727,9 @@
     const statsBtn = document.getElementById('stats-btn');
     const closeModalBtn = document.getElementById('close-modal');
     const modalOverlay = document.getElementById('modal-overlay');
+    const helpBtn = document.getElementById('help-btn');
+    const closeHelpBtn = document.getElementById('close-help');
+    const helpOverlay = document.getElementById('help-overlay');
     const diffButtons = document.querySelectorAll('.diff-btn');
 
     function getStats() {
@@ -740,6 +817,7 @@
         : puzzleOffset[currentMode] === 0 ? 'Today' : `#${puzzleOffset[currentMode] + 1}`;
       messageEl.textContent = state.message;
       messageEl.style.color = state.messageColor;
+      stepsEl.innerHTML = stepsHTML(state.steps);
 
       for (let r = 0; r < MAX_ATTEMPTS; r++) {
         const rowEl = document.createElement('div');
@@ -776,6 +854,28 @@
         setupActiveRowInteractivity();
         updateActiveRowDisplay();
       }
+
+      updateKeypad();
+    }
+
+    // Color each digit key by the best feedback it has earned so far: green > yellow > gray
+    function updateKeypad() {
+      const config = DIFFICULTIES[currentMode];
+      const state = gameStates[currentMode];
+      const rank = { absent: 1, present: 2, correct: 3 };
+      const best = {};
+
+      state.submittedGuesses.forEach(guess => {
+        evaluateGuessFeedback(guess, config.secretDigits).forEach((f, i) => {
+          if (!best[guess[i]] || rank[f] > rank[best[guess[i]]]) best[guess[i]] = f;
+        });
+      });
+
+      document.querySelectorAll('.key').forEach(key => {
+        key.classList.remove('correct', 'present', 'absent');
+        const f = best[key.getAttribute('data-key')];
+        if (f) key.classList.add(f);
+      });
     }
 
     function setupActiveRowInteractivity() {
@@ -852,13 +952,64 @@
       }
     }
 
-    function evaluateExpression(digits, config) {
-      const expr = config.buildExpr(digits);
-      try {
-        return Function(`"use strict"; return (${expr})`)();
-      } catch {
-        return null;
+    // A row of digits as the numbers and operators it spells: ['12', '+', '3', '×', '4']
+    function toTokens(digits, config) {
+      const tokens = [];
+      let num = '';
+      let slot = 0;
+      for (const item of config.template) {
+        if (item === '=') break;
+        if (item === '') {
+          num += digits[slot++];
+        } else {
+          tokens.push(num, item);
+          num = '';
+        }
       }
+      tokens.push(num);
+      return tokens;
+    }
+
+    function exprText(digits, config) {
+      return toTokens(digits, config).map(t => t === '-' ? '−' : t).join(' ');
+    }
+
+    // Evaluate in PEMDAS order, keeping every intermediate line so the player can see the work:
+    // 12 + 3 × 4 − 5 → 12 + 12 − 5 → 24 − 5 → 19. Each step records which operation happens next.
+    function evaluateWithSteps(digits, config) {
+      const tokens = toTokens(digits, config).map((t, i) => i % 2 ? t : parseInt(t, 10));
+      const steps = [{ tokens: [...tokens], at: -1 }];
+
+      for (const pass of [['×', '÷'], ['+', '-']]) {
+        let i;
+        while ((i = tokens.findIndex((t, k) => k % 2 === 1 && pass.includes(t))) !== -1) {
+          steps[steps.length - 1].at = i;
+          const [a, op, b] = tokens.slice(i - 1, i + 2);
+          const v = op === '×' ? a * b : op === '÷' ? a / b : op === '+' ? a + b : a - b;
+          tokens.splice(i - 1, 3, v);
+          steps.push({ tokens: [...tokens], at: -1 });
+        }
+      }
+
+      return { value: tokens[0], steps };
+    }
+
+    function evaluateExpression(digits, config) {
+      return evaluateWithSteps(digits, config).value;
+    }
+
+    // One line per step, the operation about to happen highlighted
+    function stepsHTML(steps) {
+      const line = ({ tokens, at }) => {
+        const parts = tokens.map(t => t === '-' ? '−' : String(t));
+        if (at < 0) return parts.join(' ');
+        return [
+          ...parts.slice(0, at - 1),
+          `<span class="hl">${parts.slice(at - 1, at + 2).join(' ')}</span>`,
+          ...parts.slice(at + 2)
+        ].join(' ');
+      };
+      return steps.map(line).join(' <span class="arrow">→</span> ');
     }
 
     function submitGuess() {
@@ -875,15 +1026,19 @@
         return;
       }
 
-      const result = evaluateExpression(state.currentInput, config);
+      const { value: result, steps } = evaluateWithSteps(state.currentInput, config);
       if (result !== config.target) {
-        state.message = `Equals ${result}, but target is ${config.target}!`;
+        state.message = `That equals ${result}, not ${config.target}. Here's the order of operations:`;
         state.messageColor = '#dc3545';
+        state.steps = steps;
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
+        stepsEl.innerHTML = stepsHTML(steps);
         return;
       }
 
+      state.steps = [];
+      stepsEl.innerHTML = '';
       const guess = [...state.currentInput];
       state.submittedGuesses.push(guess);
       state.currentInput = new Array(config.secretDigits.length).fill('');
@@ -899,41 +1054,40 @@
       });
 
       attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
+      updateKeypad();
 
+      const counts = isDaily();
       if (guess.join('') === config.secretDigits.join('')) {
-        state.message = '🎉 Splendid! You solved today\'s puzzle!';
+        state.message = counts ? '🎉 Splendid! You solved today\'s puzzle!' : '🎉 Splendid! You solved it!';
         state.messageColor = '#28a745';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
         state.isGameOver = true;
-        updateStats(true, currentAttempt);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
+        if (counts) {
+          updateStats(true, currentAttempt);
+          setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
+        }
       } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
-        state.message = `Game Over! Solution: ${config.secretDigits.join('')}`;
+        state.message = `Game over! It was ${exprText(config.secretDigits, config)} = ${config.target}`;
         state.messageColor = '#dc3545';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
         state.isGameOver = true;
-        updateStats(false, 0);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
+        if (counts) {
+          updateStats(false, 0);
+          setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
+        }
       } else {
         setupActiveRowInteractivity();
         updateActiveRowDisplay();
       }
+
+      saveProgress();
     }
 
     // Reset current active mode tab only
     function resetCurrentMode() {
-      const config = DIFFICULTIES[currentMode];
-      gameStates[currentMode] = {
-        submittedGuesses: [],
-        currentInput: new Array(config.secretDigits.length).fill(''),
-        selectedIndex: 0,
-        isGameOver: false,
-        revealed: false,
-        message: '',
-        messageColor: '#dc3545'
-      };
+      gameStates[currentMode] = newGameState();
       renderBoard();
     }
 
@@ -956,12 +1110,13 @@
       const config = DIFFICULTIES[currentMode];
       const state = gameStates[currentMode];
       if (state.isGameOver) return;
-      const expr = config.buildExpr(config.secretDigits).replace(/\*/g, '×');
       state.isGameOver = true;
       state.revealed = true;
-      state.message = `Solution: ${expr} = ${config.target}`;
+      state.message = `Solution: ${exprText(config.secretDigits, config)} = ${config.target}`;
       state.messageColor = '#6c757d';
+      state.steps = evaluateWithSteps(config.secretDigits, config).steps;
       renderBoard();
+      saveProgress();
     }
 
     // Skip: re-roll this level's puzzle from a fresh seed and start over on it
@@ -1044,6 +1199,16 @@
       modalOverlay.classList.remove('open');
     });
 
+    helpBtn.addEventListener('click', () => helpOverlay.classList.add('open'));
+    closeHelpBtn.addEventListener('click', () => helpOverlay.classList.remove('open'));
+
+    // Clicking the dimmed backdrop closes either modal
+    [modalOverlay, helpOverlay].forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('open');
+      });
+    });
+
     // Difficulty Tab Switching
     diffButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1065,8 +1230,16 @@
     // Physical Keyboard Listener
     document.addEventListener('keydown', (e) => {
       if (e.target === targetInput) return;
+      if (e.key === 'Escape') {
+        modalOverlay.classList.remove('open');
+        helpOverlay.classList.remove('open');
+      }
       if (e.key === 'Backspace') handleKeyPress('BACKSPACE');
-      else if (e.key === 'Enter') handleKeyPress('ENTER');
+      else if (e.key === 'Enter') {
+        // Otherwise Enter also "clicks" whichever button was clicked last (Skip, a keypad key...)
+        e.preventDefault();
+        handleKeyPress('ENTER');
+      }
       else if (/^[0-9]$/.test(e.key)) handleKeyPress(e.key);
     });
 
@@ -1074,9 +1247,17 @@
     giveUpBtn.addEventListener('click', giveUpCurrentMode);
 
     // Initial Start
-    checkDailyReset();
+    loadProgress();
     renderBoard();
     renderStatsModal();
+
+    // First visit: open the rules
+    try {
+      if (!localStorage.getItem('pemdas_wordle_seen_help')) {
+        helpOverlay.classList.add('open');
+        localStorage.setItem('pemdas_wordle_seen_help', '1');
+      }
+    } catch {}
   </script>
 </body>
 </html>
