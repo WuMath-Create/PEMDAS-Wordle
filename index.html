@@ -85,7 +85,7 @@
       border: none;
       background: transparent;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: #6c757d;
       cursor: pointer;
@@ -214,7 +214,7 @@
     /* Footer Metrics */
     .footer {
       display: flex;
-      justify-style: space-around;
+      justify-content: space-around;
       align-items: center;
       border-top: 1px solid #eee;
       padding-top: 14px;
@@ -373,9 +373,9 @@
 
     <!-- Difficulty Selector -->
     <div class="difficulty-bar">
-      <button class="diff-btn" data-mode="easy">Warm up</button>
-      <button class="diff-btn active" data-mode="medium">Getting going</button>
-      <button class="diff-btn" data-mode="hard">Challenge me</button>
+      <button class="diff-btn" data-mode="easy">EASY</button>
+      <button class="diff-btn active" data-mode="medium">MEDIUM</button>
+      <button class="diff-btn" data-mode="hard">HARD</button>
     </div>
 
     <div class="message" id="message"></div>
@@ -498,7 +498,7 @@
       const seed = getTodaySeed();
       const opsPool = ['+', '-', '×'];
 
-      // --- WARM UP (3 Digits, 2 Operations) ---
+      // --- EASY (3 Digits, 2 Operations) ---
       const randEasy = createRandom(seed + 100);
       const opE1 = opsPool[Math.floor(randEasy() * opsPool.length)];
       const opE2 = opsPool[Math.floor(randEasy() * opsPool.length)];
@@ -513,7 +513,7 @@
       const targetEasy = computeExpression(templateEasy, dE, blankIndicesEasy);
       templateEasy.push('=', String(targetEasy));
 
-      // --- GETTING GOING (4 Digits [2-digit + 2 single digits], 2 Operations) ---
+      // --- MEDIUM (4 Digits [2-digit + 2 single digits], 2 Operations) ---
       const randMed = createRandom(seed + 200);
       const opM1 = opsPool[Math.floor(randMed() * opsPool.length)];
       const opM2 = opsPool[Math.floor(randMed() * opsPool.length)];
@@ -529,7 +529,7 @@
       const targetMed = computeExpression(templateMed, dM, blankIndicesMed);
       templateMed.push('=', String(targetMed));
 
-      // --- CHALLENGE ME (5 Digits, 3 Operations) ---
+      // --- HARD (5 Digits, 3 Operations) ---
       const randHard = createRandom(seed + 300);
       const opH1 = opsPool[Math.floor(randHard() * opsPool.length)];
       const opH2 = opsPool[Math.floor(randHard() * opsPool.length)];
