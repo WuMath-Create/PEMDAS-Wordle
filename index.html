@@ -13,7 +13,8 @@
     }
 
     body {
-      background-color: #f8f9fa;
+      background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 50%, #fef3c7 100%);
+      background-attachment: fixed;
       color: #1a1a1a;
       display: flex;
       justify-content: center;
@@ -28,8 +29,21 @@
       max-width: 460px;
       padding: 20px 16px;
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.12);
       position: relative;
+      padding-top: 26px;
+    }
+
+    /* Rainbow stripe across the top, one color per PEMDAS letter */
+    .app-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      border-radius: 16px 16px 0 0;
+      background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6);
     }
 
     /* Header */
@@ -42,9 +56,17 @@
 
     .header h1 {
       font-size: 22px;
-      font-weight: 600;
-      color: #111;
+      font-weight: 800;
+      color: #312e81;
     }
+
+    /* One color per letter of PEMDAS */
+    .header h1 .p { color: #ef4444; }
+    .header h1 .e { color: #f97316; }
+    .header h1 .m { color: #d4a106; }
+    .header h1 .d { color: #22c55e; }
+    .header h1 .a { color: #3b82f6; }
+    .header h1 .s { color: #8b5cf6; }
 
     .header-actions {
       display: flex;
@@ -52,7 +74,7 @@
     }
 
     .icon-btn {
-      background: #e9ecef;
+      background: #eef2ff;
       border: none;
       width: 36px;
       height: 36px;
@@ -66,7 +88,7 @@
     }
 
     .icon-btn:hover {
-      background: #dee2e6;
+      background: #e0e7ff;
     }
 
     /* Difficulty Bar */
@@ -74,7 +96,7 @@
       display: flex;
       gap: 6px;
       margin-bottom: 16px;
-      background: #f1f3f5;
+      background: #eef2ff;
       padding: 4px;
       border-radius: 8px;
     }
@@ -93,10 +115,13 @@
     }
 
     .diff-btn.active {
-      background: #ffffff;
-      color: #111;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
+
+    .diff-btn.active[data-mode="easy"]   { background: #10b981; }
+    .diff-btn.active[data-mode="medium"] { background: #3b82f6; }
+    .diff-btn.active[data-mode="hard"]   { background: #8b5cf6; }
 
     /* Game Grid */
     .grid {
@@ -136,21 +161,30 @@
       cursor: pointer;
     }
 
+    .tile.editable {
+      border-color: #c7d2fe;
+    }
+
     .tile.editable:hover {
-      border-color: #86b7fe;
+      border-color: #818cf8;
     }
 
     .tile.selected {
-      border-color: #111 !important;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
-      background-color: #f8f9fa;
+      border-color: #4f46e5 !important;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      background-color: #f5f7ff;
     }
 
     /* Fixed Operator Tiles */
     .tile.operator {
-      background: #6c757d;
-      border-color: #6c757d;
+      background: #6366f1;
+      border-color: #6366f1;
       color: #fff;
+    }
+
+    .tile.target {
+      background: #f97316;
+      border-color: #f97316;
     }
 
     /* Evaluated Feedback Colors */
@@ -188,7 +222,7 @@
     .key {
       flex: 1;
       height: 44px;
-      background: #f1f3f5;
+      background: #eef2ff;
       border: none;
       border-radius: 6px;
       font-size: 16px;
@@ -201,8 +235,17 @@
       transition: background 0.1s;
     }
 
+    .key:hover {
+      background: #e0e7ff;
+    }
+
     .key:active {
-      background: #e9ecef;
+      background: #c7d2fe;
+    }
+
+    .key[data-key="ENTER"] {
+      background: #4f46e5;
+      color: #fff;
     }
 
     .key.wide {
@@ -239,10 +282,11 @@
     .metric-value {
       font-size: 18px;
       font-weight: 700;
-      color: #111;
+      color: #312e81;
     }
 
     #target-display {
+      color: #f97316;
       cursor: pointer;
       border-bottom: 1px dashed #adb5bd;
     }
@@ -381,6 +425,7 @@
     .stat-val {
       font-size: 20px;
       font-weight: 700;
+      color: #4f46e5;
     }
 
     .stat-lbl {
@@ -430,7 +475,7 @@
 
   <div class="app-container">
     <div class="header">
-      <h1>PEMDAS Wordle</h1>
+      <h1><span class="p">P</span><span class="e">E</span><span class="m">M</span><span class="d">D</span><span class="a">A</span><span class="s">S</span> Wordle</h1>
       <div class="header-actions">
         <button class="icon-btn" id="help-btn" title="How to play">?</button>
         <button class="icon-btn" id="stats-btn" title="Statistics">📊</button>
@@ -533,14 +578,14 @@
         <p><b>Every guess has to be true.</b> It must actually equal the target, so remember the order of operations: multiply before you add or subtract. If a guess misses, you'll see how it works out step by step.</p>
         <p>After each guess, the tiles change color. Say the hidden equation is 18 + 2 × 3 = 24 and you guess:</p>
         <div class="row">
-          <div class="tile correct">1</div><div class="tile present">2</div><div class="tile operator">+</div><div class="tile present">3</div><div class="tile operator">×</div><div class="tile absent">4</div><div class="tile operator">=</div><div class="tile operator">24</div>
+          <div class="tile correct">1</div><div class="tile present">2</div><div class="tile operator">+</div><div class="tile present">3</div><div class="tile operator">×</div><div class="tile absent">4</div><div class="tile operator">=</div><div class="tile operator target">24</div>
         </div>
         <ul>
           <li><b>Green:</b> the 1 is right, in the right spot.</li>
           <li><b>Yellow:</b> 2 and 3 are in the equation, but in other spots.</li>
           <li><b>Gray:</b> there's no 4.</li>
         </ul>
-        <p>⏭ skips to a new puzzle, 🏳 gives up and shows the answer, and clicking the target lets you pick your own. Only the daily puzzle counts toward your stats. New puzzles every midnight (Eastern).</p>
+        <p>⏭ skips to a new puzzle, 🏳 gives up and shows the answer, and clicking the target lets you pick your own. Every puzzle you finish counts toward your stats (giving up counts as a loss). New puzzles every midnight (Eastern).</p>
       </div>
     </div>
   </div>
@@ -669,7 +714,7 @@
     const puzzleOffset = { easy: 0, medium: 0, hard: 0 };
     const customTarget = { easy: false, medium: false, hard: false };
 
-    // Only today's puzzle (not a skipped or custom one) is saved and counts toward stats
+    // Today's puzzle, as opposed to a skipped or custom one. Only it is saved across reloads.
     function isDaily() {
       return puzzleOffset[currentMode] === 0 && !customTarget[currentMode];
     }
@@ -830,6 +875,7 @@
 
           if (item !== '') {
             tile.classList.add('operator');
+            if (c === config.template.length - 1) tile.classList.add('target');
             tile.textContent = item;
           }
 
@@ -1056,27 +1102,22 @@
       attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
       updateKeypad();
 
-      const counts = isDaily();
       if (guess.join('') === config.secretDigits.join('')) {
-        state.message = counts ? '🎉 Splendid! You solved today\'s puzzle!' : '🎉 Splendid! You solved it!';
+        state.message = isDaily() ? '🎉 Splendid! You solved today\'s puzzle!' : '🎉 Splendid! You solved it!';
         state.messageColor = '#28a745';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
         state.isGameOver = true;
-        if (counts) {
-          updateStats(true, currentAttempt);
-          setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
-        }
+        updateStats(true, currentAttempt);
+        setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
       } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
         state.message = `Game over! It was ${exprText(config.secretDigits, config)} = ${config.target}`;
         state.messageColor = '#dc3545';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
         state.isGameOver = true;
-        if (counts) {
-          updateStats(false, 0);
-          setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
-        }
+        updateStats(false, 0);
+        setTimeout(() => { renderStatsModal(); modalOverlay.classList.add('open'); }, 1200);
       } else {
         setupActiveRowInteractivity();
         updateActiveRowDisplay();
@@ -1105,7 +1146,7 @@
       });
     }
 
-    // Give up: reveal the answer and end this level. Does not count toward stats.
+    // Give up: reveal the answer and end this level. Counts as a loss.
     function giveUpCurrentMode() {
       const config = DIFFICULTIES[currentMode];
       const state = gameStates[currentMode];
@@ -1115,6 +1156,8 @@
       state.message = `Solution: ${exprText(config.secretDigits, config)} = ${config.target}`;
       state.messageColor = '#6c757d';
       state.steps = evaluateWithSteps(config.secretDigits, config).steps;
+      updateStats(false, 0);
+      renderStatsModal();
       renderBoard();
       saveProgress();
     }
