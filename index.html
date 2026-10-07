@@ -214,7 +214,7 @@
     /* Footer Metrics */
     .footer {
       display: flex;
-      justify-style: space-around;
+      justify-content: space-around;
       align-items: center;
       border-top: 1px solid #eee;
       padding-top: 14px;
@@ -362,7 +362,6 @@
       min-width: 16px;
     }
 
-    /* How to Play Styles */
     .help-text {
       font-size: 13px;
       line-height: 1.5;
@@ -547,69 +546,44 @@
       };
     }
 
-    function computeExpression(template, digits, blankIndices) {
-      let exprStr = '';
-      let digitIdx = 0;
-      
-      template.forEach((token, i) => {
-        if (token === '=') return;
-        if (blankIndices.includes(i)) {
-          exprStr += digits[digitIdx++];
-        } else {
-          if (token === '×') exprStr += ' * ';
-          else if (token === '+') exprStr += ' + ';
-          else if (token === '-') exprStr += ' - ';
-          else exprStr += token;
-        }
-      });
+    function evalEasy(d) {
+      return parseInt(d[0], 10) + (parseInt(d[1], 10) * parseInt(d[2], 10));
+    }
 
-      try {
-        return Function(`"use strict"; return (${exprStr})`)();
-      } catch {
-        return null;
-      }
+    function evalMedium(d) {
+      const num1 = parseInt(d[0] + d[1], 10);
+      return num1 + (parseInt(d[2], 10) * parseInt(d[3], 10));
+    }
+
+    function evalHard(d) {
+      const num1 = parseInt(d[0] + d[1], 10);
+      return num1 + (parseInt(d[2], 10) * parseInt(d[3], 10)) - parseInt(d[4], 10);
     }
 
     function generateDailyPuzzles() {
       const seed = getTodaySeed();
-      const opsPool = ['+', '-', '×'];
 
       // LEVEL 1
       const randEasy = createRandom(seed + 100);
-      const opE1 = opsPool[Math.floor(randEasy() * opsPool.length)];
-      const opE2 = opsPool[Math.floor(randEasy() * opsPool.length)];
       const dE = [
         Math.floor(randEasy() * 8) + 1,
         Math.floor(randEasy() * 8) + 1, 
         Math.floor(randEasy() * 8) + 1
       ].map(String);
-      
-      const templateEasy = ['', opE1, '', opE2, ''];
-      const blankIndicesEasy = [0, 2, 4];
-      const targetEasy = computeExpression(templateEasy, dE, blankIndicesEasy);
-      templateEasy.push('=', String(targetEasy));
+      const targetEasy = evalEasy(dE);
 
       // LEVEL 2
       const randMed = createRandom(seed + 200);
-      const opM1 = opsPool[Math.floor(randMed() * opsPool.length)];
-      const opM2 = opsPool[Math.floor(randMed() * opsPool.length)];
       const dM = [
         Math.floor(randMed() * 3) + 1,
         Math.floor(randMed() * 9) + 1,
         Math.floor(randMed() * 8) + 1,
         Math.floor(randMed() * 8) + 1
       ].map(String);
-
-      const templateMed = ['', '', opM1, '', opM2, ''];
-      const blankIndicesMed = [0, 1, 3, 5];
-      const targetMed = computeExpression(templateMed, dM, blankIndicesMed);
-      templateMed.push('=', String(targetMed));
+      const targetMed = evalMedium(dM);
 
       // LEVEL 3
       const randHard = createRandom(seed + 300);
-      const opH1 = opsPool[Math.floor(randHard() * opsPool.length)];
-      const opH2 = opsPool[Math.floor(randHard() * opsPool.length)];
-      const opH3 = opsPool[Math.floor(randHard() * opsPool.length)];
       const dH = [
         Math.floor(randHard() * 3) + 1,
         Math.floor(randHard() * 9) + 1,
@@ -617,107 +591,9 @@
         Math.floor(randHard() * 8) + 1,
         Math.floor(randHard() * 9) + 1
       ].map(String);
-
-      const templateHard = ['', '', opH1, '', opH2, '', opH3, ''];
-      const blankIndicesHard = [0, 1, 3, 5, 7];
-      const targetHard = computeExpression(templateHard, dH, blankIndicesHard);
-      templateHard.push('=', String(targetHard));
+      const targetHard = evalHard(dH);
 
       return {
         easy: {
           target: targetEasy,
-          template: templateEasy,
-          blankIndices: blankIndicesEasy,
-          secretDigits: dE
-        },
-        medium: {
-          target: targetMed,
-          template: templateMed,
-          blankIndices: blankIndicesMed,
-          secretDigits: dM
-        },
-        hard: {
-          target: targetHard,
-          template: templateHard,
-          blankIndices: blankIndicesHard,
-          secretDigits: dH
-        }
-      };
-    }
-
-    function evaluateGuessFeedback(guess, secretDigits) {
-      const len = guess.length;
-      const feedback = new Array(len).fill('absent');
-      const targetCounts = {};
-
-      for (let i = 0; i < len; i++) {
-        const digit = secretDigits[i];
-        targetCounts[digit] = (targetCounts[digit] || 0) + 1;
-      }
-
-      for (let i = 0; i < len; i++) {
-        if (guess[i] === secretDigits[i]) {
-          feedback[i] = 'correct';
-          targetCounts[guess[i]]--;
-        }
-      }
-
-      for (let i = 0; i < len; i++) {
-        if (feedback[i] !== 'correct') {
-          const digit = guess[i];
-          if (targetCounts[digit] && targetCounts[digit] > 0) {
-            feedback[i] = 'present';
-            targetCounts[digit]--;
-          } else {
-            feedback[i] = 'absent';
-          }
-        }
-      }
-
-      return feedback;
-    }
-
-    const MAX_ATTEMPTS = 6;
-    const DIFFICULTIES = generateDailyPuzzles();
-    let currentMode = 'medium';
-
-    function checkDailyReset() {
-      const todaySeed = getTodaySeed();
-      const lastPlayedDate = localStorage.getItem('pemdas_wordle_last_date');
-      
-      if (lastPlayedDate !== String(todaySeed)) {
-        localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-      }
-    }
-
-    const gameStates = {
-      easy: {
-        submittedGuesses: [],
-        currentInput: [], 
-        selectedIndex: 0, 
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      medium: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      hard: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      }
-    };
-
-    const gridEl = document.getElementById('grid');
-    const messageEl = document.getElementById('message');
-    const targetDisplay = document.getElementById('target-display');
-    const attemptsDisplay = document.getElementById('attempts-display
+          template:
