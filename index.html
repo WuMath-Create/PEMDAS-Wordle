@@ -48,6 +48,7 @@
 
     .header-actions {
       display: flex;
+      align-items: center;
       gap: 8px;
     }
 
@@ -62,12 +63,14 @@
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      font-weight: bold;
-      transition: background 0.2s;
+      font-weight: 700;
+      color: #333;
+      transition: background 0.2s, color 0.2s;
     }
 
     .icon-btn:hover {
       background: #dee2e6;
+      color: #000;
     }
 
     /* Difficulty Bar */
@@ -267,7 +270,7 @@
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 10;
+      z-index: 100;
     }
 
     .modal-overlay.open {
@@ -383,15 +386,16 @@
 
     .example-tile {
       display: inline-block;
-      width: 24px;
-      height: 24px;
-      line-height: 24px;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
       text-align: center;
       font-weight: bold;
       color: #fff;
       border-radius: 4px;
       margin: 0 2px;
       vertical-align: middle;
+      font-size: 11px;
     }
 
     .example-tile.green { background: #6aaa64; }
@@ -405,8 +409,8 @@
     <div class="header">
       <h1>PEMDAS Wordle</h1>
       <div class="header-actions">
-        <button class="icon-btn" id="help-btn" title="How to Play">?</button>
-        <button class="icon-btn" id="stats-btn" title="Statistics">📊</button>
+        <button class="icon-btn" id="help-btn" title="How to Play" aria-label="How to Play">?</button>
+        <button class="icon-btn" id="stats-btn" title="Statistics" aria-label="Statistics">📊</button>
       </div>
     </div>
 
@@ -454,7 +458,7 @@
       </div>
     </div>
 
-    <!-- Help Modal -->
+    <!-- How to Play Help Modal -->
     <div class="modal-overlay" id="help-modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
@@ -462,16 +466,16 @@
           <button class="close-btn" id="close-help-modal">&times;</button>
         </div>
         <div class="help-body">
-          <p>Guess the hidden digits in <strong>6 tries</strong>!</p>
+          <p>Guess the hidden digits in <strong>6 attempts</strong>!</p>
           <p><strong>Rules:</strong></p>
           <ul>
             <li>Fill in all the blank tiles with digits (0–9).</li>
-            <li>Your expression must follow <strong>PEMDAS</strong> order of operations and evaluate exactly to the target number.</li>
+            <li>Your expression must follow order of operations (<strong>PEMDAS</strong>) and evaluate exactly to the target answer.</li>
           </ul>
-          <p><strong>Color Feedback:</strong></p>
-          <p><span class="example-tile green">G</span> <strong>Green:</strong> Digit is in the correct spot.</p>
-          <p><span class="example-tile yellow">Y</span> <strong>Yellow:</strong> Digit is in the solution, but in a different spot.</p>
-          <p><span class="example-tile gray">G</span> <strong>Gray:</strong> Digit is not in the hidden solution.</p>
+          <p><strong>Feedback Colors:</strong></p>
+          <p><span class="example-tile green">7</span> <strong>Green:</strong> Digit is correct and in the right position.</p>
+          <p><span class="example-tile yellow">3</span> <strong>Yellow:</strong> Digit is in the expression, but in a different spot.</p>
+          <p><span class="example-tile gray">5</span> <strong>Gray:</strong> Digit is not used in the hidden expression.</p>
         </div>
       </div>
     </div>
@@ -510,7 +514,6 @@
   </div>
 
   <script>
-    // Generates a daily seed based strictly on Midnight US Eastern Time (EST/EDT)
     function getTodaySeed() {
       const now = new Date();
       const estDateStr = now.toLocaleDateString('en-US', {
@@ -592,7 +595,6 @@
       };
     }
 
-    // Two-pass Wordle feedback logic ensuring exact frequency matching
     function evaluateGuessFeedback(guess, secretDigits) {
       const len = guess.length;
       const feedback = new Array(len).fill('absent');
@@ -669,10 +671,13 @@
     const messageEl = document.getElementById('message');
     const targetDisplay = document.getElementById('target-display');
     const attemptsDisplay = document.getElementById('attempts-display');
+    
+    // Stats elements
     const statsBtn = document.getElementById('stats-btn');
     const closeModalBtn = document.getElementById('close-modal');
     const modalOverlay = document.getElementById('modal-overlay');
 
+    // Help elements
     const helpBtn = document.getElementById('help-btn');
     const closeHelpModalBtn = document.getElementById('close-help-modal');
     const helpModalOverlay = document.getElementById('help-modal-overlay');
@@ -855,4 +860,140 @@
       } else if (key === 'ENTER') {
         submitGuess();
 
-      } else
+      } else if (/^[0-9]$/.test(key)) {
+        state.message = '';
+        messageEl.textContent = '';
+
+        state.currentInput[state.selectedIndex] = key;
+
+        const nextEmpty = state.currentInput.findIndex((val, idx) => idx > state.selectedIndex && val === '');
+        if (nextEmpty !== -1) {
+          state.selectedIndex = nextEmpty;
+        } else if (state.selectedIndex < config.secretDigits.length - 1) {
+          state.selectedIndex++;
+        }
+
+        updateActiveRowDisplay();
+      }
+    }
+
+    function evaluateExpression(digits, config) {
+      const expr = config.buildExpr(digits);
+      try {
+        return Function(`"use strict"; return (${expr})`)();
+      } catch {
+        return null;
+      }
+    }
+
+    function submitGuess() {
+      const state = gameStates[currentMode];
+      const config = DIFFICULTIES[currentMode];
+
+      const isFilled = state.currentInput.every(digit => digit !== '');
+
+      if (!isFilled) {
+        state.message = `Fill in all ${config.secretDigits.length} blanks!`;
+        state.messageColor = '#dc3545';
+        messageEl.style.color = state.messageColor;
+        messageEl.textContent = state.message;
+        return;
+      }
+
+      const result = evaluateExpression(state.currentInput, config);
+      if (result !== config.target) {
+        state.message = `Equals ${result}, but target is ${config.target}!`;
+        state.messageColor = '#dc3545';
+        messageEl.style.color = state.messageColor;
+        messageEl.textContent = state.message;
+        return;
+      }
+
+      const guess = [...state.currentInput];
+      state.submittedGuesses.push(guess);
+      state.currentInput = new Array(config.secretDigits.length).fill('');
+      state.selectedIndex = 0;
+
+      const currentAttempt = state.submittedGuesses.length - 1;
+      const feedback = evaluateGuessFeedback(guess, config.secretDigits);
+
+      config.blankIndices.forEach((colIdx, i) => {
+        const tile = document.getElementById(`tile-${currentAttempt}-${colIdx}`);
+        tile.classList.remove('editable', 'selected');
+        tile.classList.add(feedback[i]);
+      });
+
+      attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
+
+      if (guess.join('') === config.secretDigits.join('')) {
+        state.message = '🎉 Splendid! You solved today\'s puzzle!';
+        state.messageColor = '#28a745';
+        messageEl.style.color = state.messageColor;
+        messageEl.textContent = state.message;
+        state.isGameOver = true;
+        updateStats(true, currentAttempt);
+        setTimeout(() => modalOverlay.classList.add('open'), 1200);
+      } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
+        state.message = `Game Over! Solution: ${config.secretDigits.join('')}`;
+        state.messageColor = '#dc3545';
+        messageEl.style.color = state.messageColor;
+        messageEl.textContent = state.message;
+        state.isGameOver = true;
+        updateStats(false, 0);
+        setTimeout(() => modalOverlay.classList.add('open'), 1200);
+      } else {
+        setupActiveRowInteractivity();
+        updateActiveRowDisplay();
+      }
+    }
+
+    // Modal Event Listeners
+    statsBtn.addEventListener('click', () => {
+      renderStatsModal();
+      modalOverlay.classList.add('open');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      modalOverlay.classList.remove('open');
+    });
+
+    helpBtn.addEventListener('click', () => {
+      helpModalOverlay.classList.add('open');
+    });
+
+    closeHelpModalBtn.addEventListener('click', () => {
+      helpModalOverlay.classList.remove('open');
+    });
+
+    // Difficulty Tab Switching
+    diffButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        diffButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        currentMode = btn.getAttribute('data-mode');
+        renderBoard();
+      });
+    });
+
+    // Keypad Click Listeners
+    document.querySelectorAll('.key').forEach(btn => {
+      btn.addEventListener('click', () => {
+        handleKeyPress(btn.getAttribute('data-key'));
+      });
+    });
+
+    // Physical Keyboard Listener
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') handleKeyPress('BACKSPACE');
+      else if (e.key === 'Enter') handleKeyPress('ENTER');
+      else if (/^[0-9]$/.test(e.key)) handleKeyPress(e.key);
+    });
+
+    // Initial Start
+    checkDailyReset();
+    renderBoard();
+    renderStatsModal();
+  </script>
+</body>
+</html>
