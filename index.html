@@ -214,7 +214,7 @@
     /* Footer Metrics */
     .footer {
       display: flex;
-      justify-content: space-around;
+      justify-style: space-around;
       align-items: center;
       border-top: 1px solid #eee;
       padding-top: 14px;
@@ -527,7 +527,6 @@
   </div>
 
   <script>
-    // Generates a daily seed based strictly on Midnight US Eastern Time (EST/EDT)
     function getTodaySeed() {
       const now = new Date();
       const estDateStr = now.toLocaleDateString('en-US', {
@@ -548,31 +547,69 @@
       };
     }
 
+    function computeExpression(template, digits, blankIndices) {
+      let exprStr = '';
+      let digitIdx = 0;
+      
+      template.forEach((token, i) => {
+        if (token === '=') return;
+        if (blankIndices.includes(i)) {
+          exprStr += digits[digitIdx++];
+        } else {
+          if (token === '×') exprStr += ' * ';
+          else if (token === '+') exprStr += ' + ';
+          else if (token === '-') exprStr += ' - ';
+          else exprStr += token;
+        }
+      });
+
+      try {
+        return Function(`"use strict"; return (${exprStr})`)();
+      } catch {
+        return null;
+      }
+    }
+
     function generateDailyPuzzles() {
       const seed = getTodaySeed();
+      const opsPool = ['+', '-', '×'];
 
       // LEVEL 1
       const randEasy = createRandom(seed + 100);
+      const opE1 = opsPool[Math.floor(randEasy() * opsPool.length)];
+      const opE2 = opsPool[Math.floor(randEasy() * opsPool.length)];
       const dE = [
         Math.floor(randEasy() * 8) + 1,
         Math.floor(randEasy() * 8) + 1, 
         Math.floor(randEasy() * 8) + 1
       ].map(String);
-      const targetEasy = parseInt(dE[0]) + (parseInt(dE[1]) * parseInt(dE[2]));
+      
+      const templateEasy = ['', opE1, '', opE2, ''];
+      const blankIndicesEasy = [0, 2, 4];
+      const targetEasy = computeExpression(templateEasy, dE, blankIndicesEasy);
+      templateEasy.push('=', String(targetEasy));
 
       // LEVEL 2
       const randMed = createRandom(seed + 200);
+      const opM1 = opsPool[Math.floor(randMed() * opsPool.length)];
+      const opM2 = opsPool[Math.floor(randMed() * opsPool.length)];
       const dM = [
         Math.floor(randMed() * 3) + 1,
         Math.floor(randMed() * 9) + 1,
         Math.floor(randMed() * 8) + 1,
         Math.floor(randMed() * 8) + 1
       ].map(String);
-      const valM1 = parseInt(dM[0] + dM[1]);
-      const targetMed = valM1 + (parseInt(dM[2]) * parseInt(dM[3]));
+
+      const templateMed = ['', '', opM1, '', opM2, ''];
+      const blankIndicesMed = [0, 1, 3, 5];
+      const targetMed = computeExpression(templateMed, dM, blankIndicesMed);
+      templateMed.push('=', String(targetMed));
 
       // LEVEL 3
       const randHard = createRandom(seed + 300);
+      const opH1 = opsPool[Math.floor(randHard() * opsPool.length)];
+      const opH2 = opsPool[Math.floor(randHard() * opsPool.length)];
+      const opH3 = opsPool[Math.floor(randHard() * opsPool.length)];
       const dH = [
         Math.floor(randHard() * 3) + 1,
         Math.floor(randHard() * 9) + 1,
@@ -581,35 +618,33 @@
         Math.floor(randHard() * 9) + 1
       ].map(String);
 
-      const valH1 = parseInt(dH[0] + dH[1]);
-      const targetHard = valH1 + (parseInt(dH[2]) * parseInt(dH[3])) - parseInt(dH[4]);
+      const templateHard = ['', '', opH1, '', opH2, '', opH3, ''];
+      const blankIndicesHard = [0, 1, 3, 5, 7];
+      const targetHard = computeExpression(templateHard, dH, blankIndicesHard);
+      templateHard.push('=', String(targetHard));
 
       return {
         easy: {
           target: targetEasy,
-          template: ['', '+', '', '×', '', '=', String(targetEasy)],
-          blankIndices: [0, 2, 4],
-          secretDigits: dE,
-          buildExpr: (d) => `${d[0]} + ${d[1]} * ${d[2]}`
+          template: templateEasy,
+          blankIndices: blankIndicesEasy,
+          secretDigits: dE
         },
         medium: {
           target: targetMed,
-          template: ['', '', '+', '', '×', '', '=', String(targetMed)],
-          blankIndices: [0, 1, 3, 5],
-          secretDigits: dM,
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]}`
+          template: templateMed,
+          blankIndices: blankIndicesMed,
+          secretDigits: dM
         },
         hard: {
           target: targetHard,
-          template: ['', '', '+', '', '×', '', '-', '', '=', String(targetHard)],
-          blankIndices: [0, 1, 3, 5, 7],
-          secretDigits: dH,
-          buildExpr: (d) => `${d[0]}${d[1]} + ${d[2]} * ${d[3]} - ${d[4]}`
+          template: templateHard,
+          blankIndices: blankIndicesHard,
+          secretDigits: dH
         }
       };
     }
 
-    // Two-pass Wordle feedback logic ensuring exact frequency matching
     function evaluateGuessFeedback(guess, secretDigits) {
       const len = guess.length;
       const feedback = new Array(len).fill('absent');
@@ -685,72 +720,4 @@
     const gridEl = document.getElementById('grid');
     const messageEl = document.getElementById('message');
     const targetDisplay = document.getElementById('target-display');
-    const attemptsDisplay = document.getElementById('attempts-display');
-    const statsBtn = document.getElementById('stats-btn');
-    const closeModalBtn = document.getElementById('close-modal');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const helpBtn = document.getElementById('help-btn');
-    const closeHelpBtn = document.getElementById('close-help');
-    const helpModal = document.getElementById('help-modal');
-    const diffButtons = document.querySelectorAll('.diff-btn');
-
-    function getStats() {
-      const statsData = localStorage.getItem('pemdas_wordle_stats');
-      if (statsData) return JSON.parse(statsData);
-      return {
-        played: 0,
-        wins: 0,
-        currentStreak: 0,
-        maxStreak: 0,
-        distribution: [0, 0, 0, 0, 0, 0]
-      };
-    }
-
-    function saveStats(stats) {
-      localStorage.setItem('pemdas_wordle_stats', JSON.stringify(stats));
-    }
-
-    function updateStats(won, attemptIndex) {
-      const stats = getStats();
-      stats.played += 1;
-
-      if (won) {
-        stats.wins += 1;
-        stats.currentStreak += 1;
-        if (stats.currentStreak > stats.maxStreak) {
-          stats.maxStreak = stats.currentStreak;
-        }
-        stats.distribution[attemptIndex] += 1;
-      } else {
-        stats.currentStreak = 0;
-      }
-
-      saveStats(stats);
-    }
-
-    function renderStatsModal() {
-      const stats = getStats();
-      document.getElementById('stat-played').textContent = stats.played;
-      const winrate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
-      document.getElementById('stat-winrate').textContent = `${winrate}%`;
-      document.getElementById('stat-streak').textContent = stats.currentStreak;
-      document.getElementById('stat-maxstreak').textContent = stats.maxStreak;
-
-      const container = document.getElementById('distribution-container');
-      container.innerHTML = '';
-      const maxDist = Math.max(...stats.distribution, 1);
-
-      stats.distribution.forEach((count, i) => {
-        const row = document.createElement('div');
-        row.className = 'dist-row';
-        
-        const label = document.createElement('div');
-        label.textContent = i + 1;
-        
-        const barContainer = document.createElement('div');
-        barContainer.className = 'dist-bar-container';
-
-        const bar = document.createElement('div');
-        bar.className = 'dist-bar';
-        const percent = Math.round((count / maxDist) * 100);
-        bar.style.width =
+    const attemptsDisplay = document.getElementById('attempts-display
