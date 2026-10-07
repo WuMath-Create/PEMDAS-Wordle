@@ -900,6 +900,15 @@
         return;
       }
 
+      // Check for leading zero in two-digit numbers across all modes (e.g. Medium/Hard two-digit starting positions)
+      if ((currentMode === 'medium' || currentMode === 'hard') && state.currentInput[0] === '0') {
+        state.message = "A two digit number can not have a leading 0";
+        state.messageColor = '#dc3545';
+        messageEl.style.color = state.messageColor;
+        messageEl.textContent = state.message;
+        return;
+      }
+
       const result = evaluateExpression(state.currentInput, config);
       if (result !== config.target) {
         state.message = `Equals ${result}, but target is ${config.target}!`;
