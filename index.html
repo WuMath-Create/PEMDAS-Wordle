@@ -172,6 +172,19 @@
       color: #fff;
     }
 
+    /* Plain Parentheses Styling (No Grey Box Tile) */
+    .tile-paren {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(16px, 4vw, 20px);
+      font-weight: 700;
+      color: #111;
+      padding: 0 1px;
+      user-select: none;
+      position: relative;
+    }
+
     /* Evaluated Feedback Colors */
     .tile.correct, .key.correct {
       background: #6aaa64 !important;
@@ -549,6 +562,20 @@
       return parseInt(`${year}${month}${day}`, 10);
     }
 
+    function getYesterdaySeed() {
+      const now = new Date();
+      // Subtract 24 hours to get yesterday's date in EST
+      const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+      const estDateStr = yesterday.toLocaleDateString('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      const [month, day, year] = estDateStr.split('/');
+      return parseInt(`${year}${month}${day}`, 10);
+    }
+
     function createRandom(seed) {
       let s = seed;
       return function() {
@@ -766,9 +793,24 @@
 
     function checkDailyReset() {
       const todaySeed = getTodaySeed();
-      const lastPlayedDate = localStorage.getItem('pemdas_wordle_last_date');
+      const lastPlayedDateStr = localStorage.getItem('pemdas_wordle_last_date');
       
-      if (lastPlayedDate !== String(todaySeed)) {
+      if (lastPlayedDateStr) {
+        const lastPlayedDate = parseInt(lastPlayedDateStr, 10);
+        const yesterdaySeed = getYesterdaySeed();
+
+        // If a new day has passed since last visit
+        if (lastPlayedDate !== todaySeed) {
+          // If the player skipped one or more days, break the current streak
+          if (lastPlayedDate < yesterdaySeed) {
+            const stats = getStats();
+            stats.currentStreak = 0;
+            saveStats(stats);
+          }
+          localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
+        }
+      } else {
+        // First time initialization
         localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
       }
     }
@@ -938,6 +980,23 @@
         rowEl.className = 'row';
 
         config.template.forEach((item, c) => {
+          // Render parentheses as plain text elements rather than grey tile boxes
+          if (item.isOperator && (item.text === '(' || item.text === ')')) {
+            const parenEl = document.createElement('div');
+            parenEl.className = 'tile-paren';
+            parenEl.textContent = item.text;
+
+            if (item.exponent) {
+              const expSpan = document.createElement('span');
+              expSpan.className = 'tile-exponent';
+              expSpan.textContent = item.exponent;
+              parenEl.appendChild(expSpan);
+            }
+
+            rowEl.appendChild(parenEl);
+            return;
+          }
+
           const tile = document.createElement('div');
           tile.className = 'tile';
           tile.id = `tile-${r}-${c}`;
