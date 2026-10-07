@@ -62,6 +62,7 @@
       align-items: center;
       justify-content: center;
       font-size: 16px;
+      font-weight: bold;
       transition: background 0.2s;
     }
 
@@ -254,7 +255,7 @@
       color: #dc3545;
     }
 
-    /* Statistics Modal */
+    /* Statistics & Help Modals */
     .modal-overlay {
       position: absolute;
       top: 0;
@@ -359,6 +360,43 @@
       width: 0%;
       min-width: 16px;
     }
+
+    /* Help Modal Content Styles */
+    .help-body {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .help-body p {
+      margin-bottom: 10px;
+    }
+
+    .help-body ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .help-body li {
+      margin-bottom: 4px;
+    }
+
+    .example-tile {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      text-align: center;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 4px;
+      margin: 0 2px;
+      vertical-align: middle;
+    }
+
+    .example-tile.green { background: #6aaa64; }
+    .example-tile.yellow { background: #c9b458; }
+    .example-tile.gray { background: #787c7e; }
   </style>
 </head>
 <body>
@@ -367,6 +405,7 @@
     <div class="header">
       <h1>PEMDAS Wordle</h1>
       <div class="header-actions">
+        <button class="icon-btn" id="help-btn" title="How to Play">?</button>
         <button class="icon-btn" id="stats-btn" title="Statistics">📊</button>
       </div>
     </div>
@@ -412,6 +451,28 @@
       <div class="metric">
         <div class="metric-label">Attempts</div>
         <div class="metric-value" id="attempts-display">0/6</div>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">HOW TO PLAY</div>
+          <button class="close-btn" id="close-help-modal">&times;</button>
+        </div>
+        <div class="help-body">
+          <p>Guess the hidden digits in <strong>6 tries</strong>!</p>
+          <p><strong>Rules:</strong></p>
+          <ul>
+            <li>Fill in all the blank tiles with digits (0–9).</li>
+            <li>Your expression must follow <strong>PEMDAS</strong> order of operations and evaluate exactly to the target number.</li>
+          </ul>
+          <p><strong>Color Feedback:</strong></p>
+          <p><span class="example-tile green">G</span> <strong>Green:</strong> Digit is in the correct spot.</p>
+          <p><span class="example-tile yellow">Y</span> <strong>Yellow:</strong> Digit is in the solution, but in a different spot.</p>
+          <p><span class="example-tile gray">G</span> <strong>Gray:</strong> Digit is not in the hidden solution.</p>
+        </div>
       </div>
     </div>
 
@@ -611,6 +672,11 @@
     const statsBtn = document.getElementById('stats-btn');
     const closeModalBtn = document.getElementById('close-modal');
     const modalOverlay = document.getElementById('modal-overlay');
+
+    const helpBtn = document.getElementById('help-btn');
+    const closeHelpModalBtn = document.getElementById('close-help-modal');
+    const helpModalOverlay = document.getElementById('help-modal-overlay');
+
     const diffButtons = document.querySelectorAll('.diff-btn');
 
     function getStats() {
@@ -789,132 +855,4 @@
       } else if (key === 'ENTER') {
         submitGuess();
 
-      } else if (/^[0-9]$/.test(key)) {
-        state.message = '';
-        messageEl.textContent = '';
-
-        state.currentInput[state.selectedIndex] = key;
-
-        const nextEmpty = state.currentInput.findIndex((val, idx) => idx > state.selectedIndex && val === '');
-        if (nextEmpty !== -1) {
-          state.selectedIndex = nextEmpty;
-        } else if (state.selectedIndex < config.secretDigits.length - 1) {
-          state.selectedIndex++;
-        }
-
-        updateActiveRowDisplay();
-      }
-    }
-
-    function evaluateExpression(digits, config) {
-      const expr = config.buildExpr(digits);
-      try {
-        return Function(`"use strict"; return (${expr})`)();
-      } catch {
-        return null;
-      }
-    }
-
-    function submitGuess() {
-      const state = gameStates[currentMode];
-      const config = DIFFICULTIES[currentMode];
-
-      const isFilled = state.currentInput.every(digit => digit !== '');
-
-      if (!isFilled) {
-        state.message = `Fill in all ${config.secretDigits.length} blanks!`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        return;
-      }
-
-      const result = evaluateExpression(state.currentInput, config);
-      if (result !== config.target) {
-        state.message = `Equals ${result}, but target is ${config.target}!`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        return;
-      }
-
-      const guess = [...state.currentInput];
-      state.submittedGuesses.push(guess);
-      state.currentInput = new Array(config.secretDigits.length).fill('');
-      state.selectedIndex = 0;
-
-      const currentAttempt = state.submittedGuesses.length - 1;
-      const feedback = evaluateGuessFeedback(guess, config.secretDigits);
-
-      config.blankIndices.forEach((colIdx, i) => {
-        const tile = document.getElementById(`tile-${currentAttempt}-${colIdx}`);
-        tile.classList.remove('editable', 'selected');
-        tile.classList.add(feedback[i]);
-      });
-
-      attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
-
-      if (guess.join('') === config.secretDigits.join('')) {
-        state.message = '🎉 Splendid! You solved today\'s puzzle!';
-        state.messageColor = '#28a745';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        state.isGameOver = true;
-        updateStats(true, currentAttempt);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
-      } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
-        state.message = `Game Over! Solution: ${config.secretDigits.join('')}`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        state.isGameOver = true;
-        updateStats(false, 0);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
-      } else {
-        setupActiveRowInteractivity();
-        updateActiveRowDisplay();
-      }
-    }
-
-    // Modal Event Listeners
-    statsBtn.addEventListener('click', () => {
-      renderStatsModal();
-      modalOverlay.classList.add('open');
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-      modalOverlay.classList.remove('open');
-    });
-
-    // Difficulty Tab Switching
-    diffButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        diffButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        currentMode = btn.getAttribute('data-mode');
-        renderBoard();
-      });
-    });
-
-    // Keypad Click Listeners
-    document.querySelectorAll('.key').forEach(btn => {
-      btn.addEventListener('click', () => {
-        handleKeyPress(btn.getAttribute('data-key'));
-      });
-    });
-
-    // Physical Keyboard Listener
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace') handleKeyPress('BACKSPACE');
-      else if (e.key === 'Enter') handleKeyPress('ENTER');
-      else if (/^[0-9]$/.test(e.key)) handleKeyPress(e.key);
-    });
-
-    // Initial Start
-    checkDailyReset();
-    renderBoard();
-    renderStatsModal();
-  </script>
-</body>
-</html>
+      } else
