@@ -132,7 +132,7 @@
       background: #fff;
       color: #000;
       user-select: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.2s, color 0.2s;
     }
 
     /* Clickable / Selected Tile Styling */
@@ -158,19 +158,19 @@
     }
 
     /* Evaluated Feedback Colors */
-    .tile.correct {
+    .tile.correct, .key.correct {
       background: #6aaa64 !important;
       border-color: #6aaa64 !important;
       color: #fff !important;
     }
 
-    .tile.present {
+    .tile.present, .key.present {
       background: #c9b458 !important;
       border-color: #c9b458 !important;
       color: #fff !important;
     }
 
-    .tile.absent {
+    .tile.absent, .key.absent {
       background: #787c7e !important;
       border-color: #787c7e !important;
       color: #fff !important;
@@ -202,11 +202,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.1s;
+      transition: background 0.2s, color 0.2s, transform 0.05s;
     }
 
     .key:active {
-      background: #e9ecef;
+      transform: scale(0.97);
     }
 
     .key.wide {
@@ -754,6 +754,40 @@
       });
     }
 
+    function updateKeypadColors() {
+      const config = DIFFICULTIES[currentMode];
+      const state = gameStates[currentMode];
+      const bestKeyStates = {}; // e.g. { '1': 'correct', '2': 'absent' }
+
+      // Compute highest status for each digit guessed so far
+      state.submittedGuesses.forEach((guess) => {
+        const feedback = evaluateGuessFeedback(guess, config.secretDigits);
+        guess.forEach((digit, i) => {
+          const status = feedback[i];
+          const currentBest = bestKeyStates[digit];
+
+          if (status === 'correct') {
+            bestKeyStates[digit] = 'correct';
+          } else if (status === 'present' && currentBest !== 'correct') {
+            bestKeyStates[digit] = 'present';
+          } else if (status === 'absent' && !currentBest) {
+            bestKeyStates[digit] = 'absent';
+          }
+        });
+      });
+
+      // Update keypad UI buttons
+      document.querySelectorAll('.key').forEach(keyBtn => {
+        const keyVal = keyBtn.getAttribute('data-key');
+        if (/^[0-9]$/.test(keyVal)) {
+          keyBtn.classList.remove('correct', 'present', 'absent');
+          if (bestKeyStates[keyVal]) {
+            keyBtn.classList.add(bestKeyStates[keyVal]);
+          }
+        }
+      });
+    }
+
     function renderBoard() {
       const config = DIFFICULTIES[currentMode];
       const state = gameStates[currentMode];
@@ -801,6 +835,8 @@
         setupActiveRowInteractivity();
         updateActiveRowDisplay();
       }
+
+      updateKeypadColors();
     }
 
     function setupActiveRowInteractivity() {
@@ -900,7 +936,7 @@
         return;
       }
 
-      // Check for leading zero in two-digit numbers across all modes (e.g. Medium/Hard two-digit starting positions)
+      // Check for leading zero in two-digit numbers across all modes
       if ((currentMode === 'medium' || currentMode === 'hard') && state.currentInput[0] === '0') {
         state.message = "A two digit number can not have a leading 0";
         state.messageColor = '#dc3545';
@@ -933,6 +969,7 @@
       });
 
       attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
+      updateKeypadColors();
 
       if (guess.join('') === config.secretDigits.join('')) {
         state.message = '🎉 Splendid! You solved today\'s puzzle!';
