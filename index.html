@@ -537,14 +537,14 @@
     function generateDailyPuzzles() {
       const seed = getTodaySeed();
 
-      // EASY
+      // EASY: Uses + and - operators
       const randEasy = createRandom(seed + 100);
       const dE = [
         Math.floor(randEasy() * 8) + 1,
         Math.floor(randEasy() * 8) + 1, 
         Math.floor(randEasy() * 8) + 1
       ].map(String);
-      const targetEasy = parseInt(dE[0]) + (parseInt(dE[1]) * parseInt(dE[2]));
+      const targetEasy = parseInt(dE[0]) + parseInt(dE[1]) - parseInt(dE[2]);
 
       // MEDIUM
       const randMed = createRandom(seed + 200);
@@ -573,10 +573,10 @@
       return {
         easy: {
           target: targetEasy,
-          template: ['', '+', '', '×', '', '=', String(targetEasy)],
+          template: ['', '+', '', '-', '', '=', String(targetEasy)],
           blankIndices: [0, 2, 4],
           secretDigits: dE,
-          buildExpr: (d) => `${d[0]} + ${d[1]} * ${d[2]}`
+          buildExpr: (d) => `${d[0]} + ${d[1]} - ${d[2]}`
         },
         medium: {
           target: targetMed,
