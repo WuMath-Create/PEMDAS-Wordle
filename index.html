@@ -25,8 +25,8 @@
     .app-container {
       background: #ffffff;
       width: 100%;
-      max-width: 460px;
-      padding: 20px 16px;
+      max-width: 480px;
+      padding: 24px 16px;
       border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       position: relative;
@@ -37,18 +37,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .header h1 {
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 24px;
+      font-weight: 700;
       color: #111;
     }
 
     .header-actions {
       display: flex;
-      align-items: center;
       gap: 8px;
     }
 
@@ -63,234 +62,158 @@
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      font-weight: 700;
-      color: #333;
-      transition: background 0.2s, color 0.2s;
+      font-weight: bold;
+      transition: background 0.2s;
     }
 
     .icon-btn:hover {
       background: #dee2e6;
-      color: #000;
     }
 
-    /* Difficulty Bar */
-    .difficulty-bar {
+    /* Level Selector Tabs */
+    .level-tabs {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       margin-bottom: 16px;
-      background: #f1f3f5;
-      padding: 4px;
-      border-radius: 8px;
     }
 
-    .diff-btn {
+    .level-tab {
       flex: 1;
-      padding: 6px 0;
-      border: none;
-      background: transparent;
-      border-radius: 6px;
+      padding: 8px 0;
+      background: #f1f3f5;
+      border: 2px solid transparent;
+      border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
-      color: #6c757d;
+      font-weight: 700;
+      color: #495057;
       cursor: pointer;
+      text-align: center;
       transition: all 0.2s;
     }
 
-    .diff-btn.active {
-      background: #ffffff;
-      color: #111;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    .level-tab:hover {
+      background: #e9ecef;
     }
 
-    /* Game Grid */
-    .grid {
+    .level-tab.active {
+      background: #e7f5ff;
+      border-color: #0d6efd;
+      color: #0d6efd;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+      margin-bottom: 16px;
+      color: #dc3545;
+    }
+
+    /* Grid Area */
+    .board-container {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin-bottom: 16px;
-      width: 100%;
+      margin-bottom: 20px;
+      align-items: center;
     }
 
-    .row {
+    .grid-row {
       display: flex;
-      justify-content: center;
-      gap: 3px;
-      width: 100%;
+      gap: 6px;
     }
 
     .tile {
-      flex: 1 1 0px;
-      max-width: 34px;
-      height: clamp(30px, 8vw, 36px);
-      border: 2px solid #ccc;
-      border-radius: 5px;
+      width: 44px;
+      height: 48px;
+      border: 2px solid #dee2e6;
+      border-radius: 6px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: clamp(13px, 3.5vw, 16px);
+      align-items: center;
+      font-size: 20px;
       font-weight: 700;
-      background: #fff;
-      color: #000;
+      text-transform: uppercase;
       user-select: none;
-      position: relative;
-      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.2s, color 0.2s;
+      transition: all 0.2s;
     }
 
-    /* Exponent badge attached to top-right of a tile without grey box */
-    .tile-exponent {
-      position: absolute;
-      top: -6px;
-      right: -5px;
-      font-size: 10px;
-      font-weight: 800;
-      background: transparent;
-      color: #111;
-      pointer-events: none;
-      line-height: 1;
-      padding: 1px 2px;
-    }
-
-    /* Clickable / Selected Tile Styling */
-    .tile.editable {
-      cursor: pointer;
-    }
-
-    .tile.editable:hover {
-      border-color: #86b7fe;
-    }
-
-    .tile.selected {
-      border-color: #111 !important;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
-      background-color: #f8f9fa;
-    }
-
-    /* Fixed Operator Tiles */
-    .tile.operator {
-      background: #6c757d;
+    .tile.filled {
       border-color: #6c757d;
-      color: #fff;
-    }
-
-    /* Plain Parentheses Styling (No Grey Box Tile) */
-    .tile-paren {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(16px, 4vw, 20px);
-      font-weight: 700;
       color: #111;
-      padding: 0 1px;
-      user-select: none;
-      position: relative;
     }
 
-    /* Evaluated Feedback Colors */
-    .tile.correct, .key.correct {
-      background: #6aaa64 !important;
+    .tile.correct {
+      background-color: #6aaa64 !important;
       border-color: #6aaa64 !important;
-      color: #fff !important;
+      color: #ffffff !important;
     }
 
-    .tile.present, .key.present {
-      background: #c9b458 !important;
+    .tile.present {
+      background-color: #c9b458 !important;
       border-color: #c9b458 !important;
-      color: #fff !important;
+      color: #ffffff !important;
     }
 
-    .tile.absent, .key.absent {
-      background: #787c7e !important;
+    .tile.absent {
+      background-color: #787c7e !important;
       border-color: #787c7e !important;
-      color: #fff !important;
+      color: #ffffff !important;
     }
 
-    /* When tile is filled with correct/present/absent, make exponent badge readable */
-    .tile.correct .tile-exponent,
-    .tile.present .tile-exponent,
-    .tile.absent .tile-exponent {
-      color: #ffffff;
-    }
-
-    /* Keypad */
-    .keypad {
+    /* Keyboard */
+    .keyboard {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin-bottom: 16px;
     }
 
-    .key-row {
+    .kb-row {
       display: flex;
-      gap: 6px;
+      justify-content: center;
+      gap: 4px;
     }
 
     .key {
-      flex: 1;
-      height: 44px;
-      background: #f1f3f5;
+      background: #e9ecef;
       border: none;
       border-radius: 6px;
+      height: 48px;
+      flex: 1;
+      max-width: 42px;
       font-size: 16px;
-      font-weight: 600;
-      color: #000;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
-      align-items: center;
       justify-content: center;
-      transition: background 0.2s, color 0.2s, transform 0.05s;
-    }
-
-    .key:active {
-      transform: scale(0.97);
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s;
     }
 
     .key.wide {
-      flex: 1.5;
-      font-size: 14px;
-      letter-spacing: 0.5px;
+      max-width: 65px;
+      font-size: 12px;
     }
 
-    /* Footer Metrics */
-    .footer {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top: 1px solid #eee;
-      padding-top: 14px;
+    .key:hover {
+      background: #dee2e6;
     }
 
-    .metric {
-      text-align: center;
+    .key.correct {
+      background-color: #6aaa64 !important;
+      color: #ffffff !important;
     }
 
-    .metric-label {
-      font-size: 11px;
-      color: #6c757d;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
+    .key.present {
+      background-color: #c9b458 !important;
+      color: #ffffff !important;
     }
 
-    .metric-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: #111;
-    }
-
-    .divider {
-      width: 1px;
-      height: 24px;
-      background: #ddd;
-    }
-
-    /* Feedback Message Popups */
-    .message {
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      min-height: 18px;
-      margin-bottom: 10px;
-      color: #dc3545;
+    .key.absent {
+      background-color: #787c7e !important;
+      color: #ffffff !important;
     }
 
     /* Modals */
@@ -305,7 +228,7 @@
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 100;
+      z-index: 10;
     }
 
     .modal-overlay.open {
@@ -315,10 +238,9 @@
     .modal-content {
       background: #ffffff;
       width: 90%;
-      max-width: 360px;
+      max-width: 380px;
       padding: 20px;
       border-radius: 12px;
-      position: relative;
     }
 
     .modal-header {
@@ -348,94 +270,13 @@
       text-align: center;
     }
 
-    .stat-box {
-      flex: 1;
-    }
+    .stat-box { flex: 1; }
+    .stat-val { font-size: 20px; font-weight: 700; }
+    .stat-lbl { font-size: 10px; color: #6c757d; text-transform: uppercase; }
 
-    .stat-val {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .stat-lbl {
-      font-size: 10px;
-      color: #6c757d;
-      text-transform: uppercase;
-    }
-
-    .dist-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .dist-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .dist-bar-container {
-      flex: 1;
-      background: #f1f3f5;
-      border-radius: 4px;
-      overflow: hidden;
-      height: 16px;
-    }
-
-    .dist-bar {
-      background: #787c7e;
-      color: #fff;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 6px;
-      font-size: 10px;
-      width: 0%;
-      min-width: 16px;
-    }
-
-    /* Help Modal Content Styles */
-    .help-body {
-      font-size: 13px;
-      line-height: 1.5;
-      color: #333;
-    }
-
-    .help-body p {
-      margin-bottom: 10px;
-    }
-
-    .help-body ul {
-      margin-left: 20px;
-      margin-bottom: 12px;
-    }
-
-    .help-body li {
-      margin-bottom: 4px;
-    }
-
-    .example-tile {
-      display: inline-block;
-      width: 22px;
-      height: 22px;
-      line-height: 22px;
-      text-align: center;
-      font-weight: bold;
-      color: #fff;
-      border-radius: 4px;
-      margin: 0 2px;
-      vertical-align: middle;
-      font-size: 11px;
-    }
-
-    .example-tile.green { background: #6aaa64; }
-    .example-tile.yellow { background: #c9b458; }
-    .example-tile.gray { background: #787c7e; }
+    .help-body { font-size: 13px; line-height: 1.5; color: #333; }
+    .help-body p { margin-bottom: 10px; }
+    .help-body ul { margin-left: 20px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -444,86 +285,75 @@
     <div class="header">
       <h1>PEMDAS Wordle</h1>
       <div class="header-actions">
-        <button class="icon-btn" id="help-btn" title="How to Play" aria-label="How to Play">?</button>
-        <button class="icon-btn" id="stats-btn" title="Statistics" aria-label="Statistics">📊</button>
+        <button class="icon-btn" id="help-btn" title="How to Play">?</button>
+        <button class="icon-btn" id="stats-btn" title="Statistics">📊</button>
       </div>
     </div>
 
-    <!-- Difficulty Selector -->
-    <div class="difficulty-bar">
-      <button class="diff-btn" data-mode="easy">Level 1</button>
-      <button class="diff-btn active" data-mode="medium">Level 2</button>
-      <button class="diff-btn" data-mode="hard">Level 3</button>
+    <div class="level-tabs">
+      <button class="level-tab active" data-level="1">Level 1 (Easy)</button>
+      <button class="level-tab" data-level="2">Level 2 (Med)</button>
+      <button class="level-tab" data-level="3">Level 3 (Hard)</button>
     </div>
 
     <div class="message" id="message"></div>
 
-    <div class="grid" id="grid"></div>
+    <div class="board-container" id="board"></div>
 
-    <div class="keypad">
-      <div class="key-row">
+    <div class="keyboard">
+      <div class="kb-row">
         <button class="key" data-key="1">1</button>
         <button class="key" data-key="2">2</button>
         <button class="key" data-key="3">3</button>
         <button class="key" data-key="4">4</button>
         <button class="key" data-key="5">5</button>
-      </div>
-      <div class="key-row">
         <button class="key" data-key="6">6</button>
         <button class="key" data-key="7">7</button>
         <button class="key" data-key="8">8</button>
         <button class="key" data-key="9">9</button>
         <button class="key" data-key="0">0</button>
       </div>
-      <div class="key-row">
+      <div class="kb-row">
+        <button class="key" data-key="+">+</button>
+        <button class="key" data-key="-">-</button>
+        <button class="key" data-key="*">*</button>
+        <button class="key" data-key="/">/</button>
+        <button class="key" data-key="(">(</button>
+        <button class="key" data-key=")">)</button>
+        <button class="key" data-key="=">=</button>
+      </div>
+      <div class="kb-row">
         <button class="key wide" data-key="ENTER">ENTER</button>
-        <button class="key wide" data-key="BACKSPACE">⌫</button>
+        <button class="key wide" data-key="BACKSPACE">DELETE</button>
       </div>
     </div>
 
-    <div class="footer">
-      <div class="metric">
-        <div class="metric-label">Target</div>
-        <div class="metric-value" id="target-display">--</div>
-      </div>
-      <div class="divider"></div>
-      <div class="metric">
-        <div class="metric-label">Attempts</div>
-        <div class="metric-value" id="attempts-display">0/6</div>
-      </div>
-    </div>
-
-    <!-- How to Play Help Modal -->
-    <div class="modal-overlay" id="help-modal-overlay">
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
       <div class="modal-content">
         <div class="modal-header">
           <div class="modal-title">HOW TO PLAY</div>
-          <button class="close-btn" id="close-help-modal">&times;</button>
+          <button class="close-btn" id="close-help">&times;</button>
         </div>
         <div class="help-body">
-          <p>Guess the hidden digits in <strong>6 attempts</strong>!</p>
-          <p><strong>Rules:</strong></p>
+          <p>Guess the mathematically correct equation following PEMDAS order of operations!</p>
           <ul>
-            <li>Fill in all the blank tiles with digits (0–9).</li>
-            <li>Your expression must follow order of operations (<strong>PEMDAS</strong>) and evaluate exactly to the target answer.</li>
-            <li>Exponents appear attached to the top right of the digit tile (e.g. <code>x²</code> or <code>x³</code>).</li>
+            <li>Green tiles mean the character is in the correct spot.</li>
+            <li>Yellow tiles mean the character is in the equation but in the wrong spot.</li>
+            <li>Gray tiles mean the character does not appear in the equation.</li>
+            <li>Every guess must be a mathematically valid equation (e.g., <strong>3+4*2=11</strong>).</li>
           </ul>
-          <p><strong>Feedback Colors:</strong></p>
-          <p><span class="example-tile green">7</span> <strong>Green:</strong> Digit is correct and in the right position.</p>
-          <p><span class="example-tile yellow">3</span> <strong>Yellow:</strong> Digit is in the expression, but in a different spot.</p>
-          <p><span class="example-tile gray">5</span> <strong>Gray:</strong> Digit is not used in the hidden expression.</p>
         </div>
       </div>
     </div>
 
-    <!-- Statistics Modal -->
-    <div class="modal-overlay" id="modal-overlay">
+    <!-- Stats Modal -->
+    <div class="modal-overlay" id="stats-modal">
       <div class="modal-content">
         <div class="modal-header">
           <div class="modal-title">STATISTICS</div>
-          <button class="close-btn" id="close-modal">&times;</button>
+          <button class="close-btn" id="close-stats">&times;</button>
         </div>
-        
         <div class="stats-summary">
           <div class="stat-box">
             <div class="stat-val" id="stat-played">0</div>
@@ -535,45 +365,56 @@
           </div>
           <div class="stat-box">
             <div class="stat-val" id="stat-streak">0</div>
-            <div class="stat-lbl">Current Streak</div>
+            <div class="stat-lbl">Streak</div>
           </div>
           <div class="stat-box">
             <div class="stat-val" id="stat-maxstreak">0</div>
             <div class="stat-lbl">Max Streak</div>
           </div>
         </div>
-
-        <div class="dist-title">GUESS DISTRIBUTION</div>
-        <div id="distribution-container"></div>
       </div>
     </div>
   </div>
 
   <script>
+    // Level 1: 8 chars long, target <= 2 digits
+    const EQUATIONS_L1 = [
+      "2+3*4=14", "5+2*3=11", "8-4/2=6",  "3*3+2=11",
+      "9-2*3=3",  "4+6/2=7",  "6*2-4=8",  "7+8/4=9",
+      "1+4*2=9",  "9-8/2=5",  "2*4+1=9",  "8-3*2=2"
+    ];
+
+    // Level 2: 10 chars long, target <= 2 digits
+    const EQUATIONS_L2 = [
+      "(2+3)*4=20", "2+(3*4)=14", "12/(2+4)=2", "(8-2)*3=18",
+      "15-(3*4)=3",  "4*(2+3)=20", "(9-3)/2=3", "18/(3+3)=3",
+      "(6+4)/2=5",  "2*(9-4)=10", "16/(2+2)=4", "(7-1)*3=18"
+    ];
+
+    // Level 3: 14-15 chars long
+    const EQUATIONS_L3 = [
+      "(2+3)*(4-1)=15", "12/(2+4)+5=7",  "(8-2)*(3+1)=24",
+      "20/((2+3)*2)=2", "(15-3)/(2+2)=3", "4*(2+3)-5=15"
+    ];
+
+    let currentLevel = 1;
+    let targetEquation = "";
+    let eqLength = 8;
+    const maxAttempts = 6;
+    let currentAttempt = 0;
+    let currentGuess = "";
+    let gameOver = false;
+
     function getTodaySeed() {
       const now = new Date();
-      const estDateStr = now.toLocaleDateString('en-US', {
+      const estStr = now.toLocaleDateString('en-US', {
         timeZone: 'America/New_York',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
       });
-      const [month, day, year] = estDateStr.split('/');
-      return parseInt(`${year}${month}${day}`, 10);
-    }
-
-    function getYesterdaySeed() {
-      const now = new Date();
-      // Subtract 24 hours to get yesterday's date in EST
-      const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-      const estDateStr = yesterday.toLocaleDateString('en-US', {
-        timeZone: 'America/New_York',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
-      const [month, day, year] = estDateStr.split('/');
-      return parseInt(`${year}${month}${day}`, 10);
+      const [m, d, y] = estStr.split('/');
+      return parseInt(`${y}${m}${d}`, 10) + (currentLevel * 100);
     }
 
     function createRandom(seed) {
@@ -584,667 +425,213 @@
       };
     }
 
-    function generateDailyPuzzles() {
+    function initGame() {
       const seed = getTodaySeed();
+      const rng = createRandom(seed);
 
-      // EASY: Basic add/subtract
-      const randEasy = createRandom(seed + 100);
-      const dE = [
-        Math.floor(randEasy() * 8) + 1,
-        Math.floor(randEasy() * 8) + 1, 
-        Math.floor(randEasy() * 8) + 1
-      ].map(String);
-      const targetEasy = parseInt(dE[0]) + parseInt(dE[1]) - parseInt(dE[2]);
+      let pool = EQUATIONS_L1;
+      if (currentLevel === 2) pool = EQUATIONS_L2;
+      if (currentLevel === 3) pool = EQUATIONS_L3;
 
-      // MEDIUM: Daily rotating operators (+, -, *, /)
-      const randMed = createRandom(seed + 200);
-      const medOpList = ['+', '-', '*', '/'];
-      const opM1 = medOpList[Math.floor(randMed() * medOpList.length)];
-      let opM2 = medOpList[Math.floor(randMed() * medOpList.length)];
+      const index = Math.floor(rng() * pool.length);
+      targetEquation = pool[index];
+      eqLength = targetEquation.length;
 
-      const dM = [
-        Math.floor(randMed() * 3) + 1,
-        Math.floor(randMed() * 9) + 1,
-        Math.floor(randMed() * 8) + 1,
-        Math.floor(randMed() * 8) + 1
-      ].map(String);
+      currentAttempt = 0;
+      currentGuess = "";
+      gameOver = false;
 
-      let targetMed = 0;
-      let symbolM1 = opM1 === '*' ? '×' : (opM1 === '/' ? '÷' : opM1);
-      let symbolM2 = opM2 === '*' ? '×' : (opM2 === '/' ? '÷' : opM2);
-
-      // Simple solver to ensure valid integer target for Level 2
-      const valM1 = parseInt(dM[0] + dM[1]);
-      const n2 = parseInt(dM[2]);
-      const n3 = parseInt(dM[3]);
-
-      // Calculate level 2 target safely
-      let exprMStr = `${valM1} ${opM1} ${n2} ${opM2} ${n3}`;
-      try {
-        let res = Function(`"use strict"; return (${exprMStr})`)();
-        if (!Number.isInteger(res) || res < 0 || Math.abs(res) > 999) {
-          // Fallback to multiplication and addition
-          opM2 = '*';
-          symbolM2 = '×';
-          exprMStr = `${valM1} + ${n2} * ${n3}`;
-          res = Function(`"use strict"; return (${exprMStr})`)();
-        }
-        targetMed = res;
-      } catch {
-        targetMed = valM1 + (n2 * n3);
-      }
-
-      // HARD: Level 3 includes exponents as attached superscripts
-      const randHard = createRandom(seed + 300);
-      const level3Templates = [
-        // Template 1: Digits with attached exponent
-        {
-          exp: '2',
-          targetFunc: (d) => Math.pow(parseInt(d[0]), 2) + (parseInt(d[1]) * parseInt(d[2])),
-          buildExpr: (d) => `Math.pow(${d[0]}, 2) + (${d[1]} * ${d[2]})`,
-          // Template contains items. Exponent is attached to the blank tile prior to it via exponentMap.
-          template: [
-            { type: 'blank', exponent: '2' },
-            { type: 'op', text: '+' },
-            { type: 'blank' },
-            { type: 'op', text: '×' },
-            { type: 'blank' }
-          ],
-          digitCount: 3
-        },
-        // Template 2: Parentheses & multi-op
-        {
-          targetFunc: (d) => (parseInt(d[0]) + parseInt(d[1])) * parseInt(d[2]) - parseInt(d[3]),
-          buildExpr: (d) => `(${d[0]} + ${d[1]}) * ${d[2]} - ${d[3]}`,
-          template: [
-            { type: 'op', text: '(' },
-            { type: 'blank' },
-            { type: 'op', text: '+' },
-            { type: 'blank' },
-            { type: 'op', text: ')' },
-            { type: 'op', text: '×' },
-            { type: 'blank' },
-            { type: 'op', text: '-' },
-            { type: 'blank' }
-          ],
-          digitCount: 4
-        },
-        // Template 3: Exponent inside parenthesized term
-        {
-          targetFunc: (d) => Math.pow(parseInt(d[0]) + parseInt(d[1]), 2) - parseInt(d[2]),
-          buildExpr: (d) => `Math.pow(${d[0]} + ${d[1]}, 2) - ${d[2]}`,
-          template: [
-            { type: 'op', text: '(' },
-            { type: 'blank' },
-            { type: 'op', text: '+' },
-            { type: 'blank' },
-            { type: 'op', text: ')', exponent: '2' },
-            { type: 'op', text: '-' },
-            { type: 'blank' }
-          ],
-          digitCount: 3
-        }
-      ];
-
-      const chosenTmplIdx = Math.floor(randHard() * level3Templates.length);
-      const chosenTmpl = level3Templates[chosenTmplIdx];
-
-      const dH = [];
-      for (let i = 0; i < chosenTmpl.digitCount; i++) {
-        dH.push(String(Math.floor(randHard() * 8) + 2)); // Avoid 0/1 for exponents
-      }
-
-      const targetHard = chosenTmpl.targetFunc(dH);
-
-      // Build template representation for grid rendering
-      const hardGridTemplate = [];
-      const hardBlankIndices = [];
-
-      chosenTmpl.template.forEach((item) => {
-        if (item.type === 'blank') {
-          hardBlankIndices.push(hardGridTemplate.length);
-          hardGridTemplate.push({
-            text: '',
-            exponent: item.exponent || null
-          });
-        } else {
-          hardGridTemplate.push({
-            text: item.text,
-            isOperator: true,
-            exponent: item.exponent || null
-          });
-        }
-      });
-
-      // Add equality segment
-      hardGridTemplate.push({ text: '=', isOperator: true });
-      hardGridTemplate.push({ text: String(targetHard), isOperator: true });
-
-      return {
-        easy: {
-          target: targetEasy,
-          template: [
-            { text: '' }, { text: '+', isOperator: true },
-            { text: '' }, { text: '-', isOperator: true },
-            { text: '' }, { text: '=', isOperator: true },
-            { text: String(targetEasy), isOperator: true }
-          ],
-          blankIndices: [0, 2, 4],
-          secretDigits: dE,
-          buildExpr: (d) => `${d[0]} + ${d[1]} - ${d[2]}`
-        },
-        medium: {
-          target: targetMed,
-          template: [
-            { text: '' }, { text: '' }, { text: symbolM1, isOperator: true },
-            { text: '' }, { text: symbolM2, isOperator: true },
-            { text: '' }, { text: '=', isOperator: true },
-            { text: String(targetMed), isOperator: true }
-          ],
-          blankIndices: [0, 1, 3, 5],
-          secretDigits: dM,
-          buildExpr: (d) => `${d[0]}${d[1]} ${opM1} ${d[2]} ${opM2} ${d[3]}`
-        },
-        hard: {
-          target: targetHard,
-          template: hardGridTemplate,
-          blankIndices: hardBlankIndices,
-          secretDigits: dH,
-          buildExpr: chosenTmpl.buildExpr
-        }
-      };
+      document.getElementById('message').textContent = "";
+      resetKeyColors();
+      buildBoard();
     }
 
-    function evaluateGuessFeedback(guess, secretDigits) {
-      const len = guess.length;
-      const feedback = new Array(len).fill('absent');
-      const targetCounts = {};
+    function buildBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = "";
 
-      for (let i = 0; i < len; i++) {
-        const digit = secretDigits[i];
-        targetCounts[digit] = (targetCounts[digit] || 0) + 1;
-      }
-
-      for (let i = 0; i < len; i++) {
-        if (guess[i] === secretDigits[i]) {
-          feedback[i] = 'correct';
-          targetCounts[guess[i]]--;
-        }
-      }
-
-      for (let i = 0; i < len; i++) {
-        if (feedback[i] !== 'correct') {
-          const digit = guess[i];
-          if (targetCounts[digit] && targetCounts[digit] > 0) {
-            feedback[i] = 'present';
-            targetCounts[digit]--;
-          } else {
-            feedback[i] = 'absent';
-          }
-        }
-      }
-
-      return feedback;
-    }
-
-    const MAX_ATTEMPTS = 6;
-    const DIFFICULTIES = generateDailyPuzzles();
-    let currentMode = 'medium';
-
-    function checkDailyReset() {
-      const todaySeed = getTodaySeed();
-      const lastPlayedDateStr = localStorage.getItem('pemdas_wordle_last_date');
-      
-      if (lastPlayedDateStr) {
-        const lastPlayedDate = parseInt(lastPlayedDateStr, 10);
-        const yesterdaySeed = getYesterdaySeed();
-
-        // If a new day has passed since last visit
-        if (lastPlayedDate !== todaySeed) {
-          // If the player skipped one or more days, break the current streak
-          if (lastPlayedDate < yesterdaySeed) {
-            const stats = getStats();
-            stats.currentStreak = 0;
-            saveStats(stats);
-          }
-          localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-        }
-      } else {
-        // First time initialization
-        localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-      }
-    }
-
-    const gameStates = {
-      easy: {
-        submittedGuesses: [],
-        currentInput: [], 
-        selectedIndex: 0, 
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      medium: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      },
-      hard: {
-        submittedGuesses: [],
-        currentInput: [],
-        selectedIndex: 0,
-        isGameOver: false,
-        message: '',
-        messageColor: '#dc3545'
-      }
-    };
-
-    const gridEl = document.getElementById('grid');
-    const messageEl = document.getElementById('message');
-    const targetDisplay = document.getElementById('target-display');
-    const attemptsDisplay = document.getElementById('attempts-display');
-    
-    // Stats elements
-    const statsBtn = document.getElementById('stats-btn');
-    const closeModalBtn = document.getElementById('close-modal');
-    const modalOverlay = document.getElementById('modal-overlay');
-
-    // Help elements
-    const helpBtn = document.getElementById('help-btn');
-    const closeHelpModalBtn = document.getElementById('close-help-modal');
-    const helpModalOverlay = document.getElementById('help-modal-overlay');
-
-    const diffButtons = document.querySelectorAll('.diff-btn');
-
-    function getStats() {
-      const statsData = localStorage.getItem('pemdas_wordle_stats');
-      if (statsData) return JSON.parse(statsData);
-      return {
-        played: 0,
-        wins: 0,
-        currentStreak: 0,
-        maxStreak: 0,
-        distribution: [0, 0, 0, 0, 0, 0]
-      };
-    }
-
-    function saveStats(stats) {
-      localStorage.setItem('pemdas_wordle_stats', JSON.stringify(stats));
-    }
-
-    function updateStats(won, attemptIndex) {
-      const stats = getStats();
-      stats.played += 1;
-
-      if (won) {
-        stats.wins += 1;
-        stats.currentStreak += 1;
-        if (stats.currentStreak > stats.maxStreak) {
-          stats.maxStreak = stats.currentStreak;
-        }
-        stats.distribution[attemptIndex] += 1;
-      } else {
-        stats.currentStreak = 0;
-      }
-
-      saveStats(stats);
-    }
-
-    function renderStatsModal() {
-      const stats = getStats();
-      document.getElementById('stat-played').textContent = stats.played;
-      const winrate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
-      document.getElementById('stat-winrate').textContent = `${winrate}%`;
-      document.getElementById('stat-streak').textContent = stats.currentStreak;
-      document.getElementById('stat-maxstreak').textContent = stats.maxStreak;
-
-      const container = document.getElementById('distribution-container');
-      container.innerHTML = '';
-      const maxDist = Math.max(...stats.distribution, 1);
-
-      stats.distribution.forEach((count, i) => {
+      for (let i = 0; i < maxAttempts; i++) {
         const row = document.createElement('div');
-        row.className = 'dist-row';
-        
-        const label = document.createElement('div');
-        label.textContent = i + 1;
-        
-        const barContainer = document.createElement('div');
-        barContainer.className = 'dist-bar-container';
+        row.className = 'grid-row';
+        row.id = `row-${i}`;
 
-        const bar = document.createElement('div');
-        bar.className = 'dist-bar';
-        const percent = Math.round((count / maxDist) * 100);
-        bar.style.width = `${percent}%`;
-        if (count > 0) bar.style.backgroundColor = '#6aaa64';
-        bar.textContent = count;
-
-        barContainer.appendChild(bar);
-        row.appendChild(label);
-        row.appendChild(barContainer);
-        container.appendChild(row);
-      });
-    }
-
-    function updateKeypadColors() {
-      const config = DIFFICULTIES[currentMode];
-      const state = gameStates[currentMode];
-      const bestKeyStates = {};
-
-      state.submittedGuesses.forEach((guess) => {
-        const feedback = evaluateGuessFeedback(guess, config.secretDigits);
-        guess.forEach((digit, i) => {
-          const status = feedback[i];
-          const currentBest = bestKeyStates[digit];
-
-          if (status === 'correct') {
-            bestKeyStates[digit] = 'correct';
-          } else if (status === 'present' && currentBest !== 'correct') {
-            bestKeyStates[digit] = 'present';
-          } else if (status === 'absent' && !currentBest) {
-            bestKeyStates[digit] = 'absent';
-          }
-        });
-      });
-
-      document.querySelectorAll('.key').forEach(keyBtn => {
-        const keyVal = keyBtn.getAttribute('data-key');
-        if (/^[0-9]$/.test(keyVal)) {
-          keyBtn.classList.remove('correct', 'present', 'absent');
-          if (bestKeyStates[keyVal]) {
-            keyBtn.classList.add(bestKeyStates[keyVal]);
-          }
-        }
-      });
-    }
-
-    function renderBoard() {
-      const config = DIFFICULTIES[currentMode];
-      const state = gameStates[currentMode];
-
-      if (state.currentInput.length !== config.secretDigits.length) {
-        state.currentInput = new Array(config.secretDigits.length).fill('');
-      }
-
-      gridEl.innerHTML = '';
-      targetDisplay.textContent = config.target;
-      attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
-      messageEl.textContent = state.message;
-      messageEl.style.color = state.messageColor;
-
-      for (let r = 0; r < MAX_ATTEMPTS; r++) {
-        const rowEl = document.createElement('div');
-        rowEl.className = 'row';
-
-        config.template.forEach((item, c) => {
-          // Render parentheses as plain text elements rather than grey tile boxes
-          if (item.isOperator && (item.text === '(' || item.text === ')')) {
-            const parenEl = document.createElement('div');
-            parenEl.className = 'tile-paren';
-            parenEl.textContent = item.text;
-
-            if (item.exponent) {
-              const expSpan = document.createElement('span');
-              expSpan.className = 'tile-exponent';
-              expSpan.textContent = item.exponent;
-              parenEl.appendChild(expSpan);
-            }
-
-            rowEl.appendChild(parenEl);
-            return;
-          }
-
+        for (let j = 0; j < eqLength; j++) {
           const tile = document.createElement('div');
           tile.className = 'tile';
-          tile.id = `tile-${r}-${c}`;
-
-          if (item.isOperator) {
-            tile.classList.add('operator');
-            tile.textContent = item.text;
-          }
-
-          // Attach exponent superscript badge directly to the top right of tile without grey box
-          if (item.exponent) {
-            const expSpan = document.createElement('span');
-            expSpan.className = 'tile-exponent';
-            expSpan.textContent = item.exponent;
-            tile.appendChild(expSpan);
-          }
-
-          rowEl.appendChild(tile);
-        });
-
-        gridEl.appendChild(rowEl);
+          tile.id = `tile-${i}-${j}`;
+          row.appendChild(tile);
+        }
+        board.appendChild(row);
       }
-
-      state.submittedGuesses.forEach((guess, rowIndex) => {
-        const feedback = evaluateGuessFeedback(guess, config.secretDigits);
-        config.blankIndices.forEach((colIdx, i) => {
-          const tile = document.getElementById(`tile-${rowIndex}-${colIdx}`);
-          
-          // Preserve exponent element if present
-          const expSpan = tile.querySelector('.tile-exponent');
-          tile.textContent = guess[i];
-          if (expSpan) tile.appendChild(expSpan);
-
-          tile.classList.add(feedback[i]);
-        });
-      });
-
-      if (state.submittedGuesses.length < MAX_ATTEMPTS && !state.isGameOver) {
-        setupActiveRowInteractivity();
-        updateActiveRowDisplay();
-      }
-
-      updateKeypadColors();
     }
 
-    function setupActiveRowInteractivity() {
-      const config = DIFFICULTIES[currentMode];
-      const state = gameStates[currentMode];
-      const activeRow = state.submittedGuesses.length;
-
-      config.blankIndices.forEach((colIdx, slotIdx) => {
-        const tile = document.getElementById(`tile-${activeRow}-${colIdx}`);
-        if (tile) {
-          tile.classList.add('editable');
-          tile.onclick = () => {
-            state.selectedIndex = slotIdx;
-            updateActiveRowDisplay();
-          };
+    function updateRowUI() {
+      for (let j = 0; j < eqLength; j++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${j}`);
+        const char = currentGuess[j] || "";
+        tile.textContent = char;
+        if (char) {
+          tile.classList.add('filled');
+        } else {
+          tile.classList.remove('filled');
         }
-      });
-    }
-
-    function updateActiveRowDisplay() {
-      const config = DIFFICULTIES[currentMode];
-      const state = gameStates[currentMode];
-      const activeRow = state.submittedGuesses.length;
-
-      config.blankIndices.forEach((colIdx, slotIdx) => {
-        const tile = document.getElementById(`tile-${activeRow}-${colIdx}`);
-        if (tile) {
-          const expSpan = tile.querySelector('.tile-exponent');
-          tile.textContent = state.currentInput[slotIdx] || '';
-          if (expSpan) tile.appendChild(expSpan);
-
-          if (slotIdx === state.selectedIndex && !state.isGameOver) {
-            tile.classList.add('selected');
-          } else {
-            tile.classList.remove('selected');
-          }
-        }
-      });
+      }
     }
 
     function handleKeyPress(key) {
-      const state = gameStates[currentMode];
-      const config = DIFFICULTIES[currentMode];
-
-      if (state.isGameOver) return;
+      if (gameOver) return;
 
       if (key === 'BACKSPACE') {
-        state.message = '';
-        messageEl.textContent = '';
-
-        if (state.currentInput[state.selectedIndex] !== '') {
-          state.currentInput[state.selectedIndex] = '';
-        } else if (state.selectedIndex > 0) {
-          state.selectedIndex--;
-          state.currentInput[state.selectedIndex] = '';
+        if (currentGuess.length > 0) {
+          currentGuess = currentGuess.slice(0, -1);
+          updateRowUI();
         }
-        updateActiveRowDisplay();
-
       } else if (key === 'ENTER') {
-        submitGuess();
-
-      } else if (/^[0-9]$/.test(key)) {
-        state.message = '';
-        messageEl.textContent = '';
-
-        state.currentInput[state.selectedIndex] = key;
-
-        const nextEmpty = state.currentInput.findIndex((val, idx) => idx > state.selectedIndex && val === '');
-        if (nextEmpty !== -1) {
-          state.selectedIndex = nextEmpty;
-        } else if (state.selectedIndex < config.secretDigits.length - 1) {
-          state.selectedIndex++;
+        if (currentGuess.length === eqLength) {
+          submitGuess();
+        } else {
+          showMessage("Equation is too short!");
         }
-
-        updateActiveRowDisplay();
-      }
-    }
-
-    function evaluateExpression(digits, config) {
-      const expr = config.buildExpr(digits);
-      try {
-        return Function(`"use strict"; return (${expr})`)();
-      } catch {
-        return null;
+      } else if (currentGuess.length < eqLength) {
+        if (/^[0-9+\-*/()=]$/.test(key)) {
+          currentGuess += key;
+          updateRowUI();
+        }
       }
     }
 
     function submitGuess() {
-      const state = gameStates[currentMode];
-      const config = DIFFICULTIES[currentMode];
-
-      const isFilled = state.currentInput.every(digit => digit !== '');
-
-      if (!isFilled) {
-        state.message = `Fill in all ${config.secretDigits.length} blanks!`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
+      if (!currentGuess.includes('=')) {
+        showMessage("Must include an '=' sign!");
         return;
       }
 
-      // Prevent leading zeros in two-digit configurations
-      if (currentMode === 'medium' && state.currentInput[0] === '0') {
-        state.message = "A two digit number cannot have a leading 0";
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        return;
+      const targetArr = targetEquation.split('');
+      const guessArr = currentGuess.split('');
+      const result = Array(eqLength).fill('absent');
+
+      // First pass: Correct positions
+      for (let i = 0; i < eqLength; i++) {
+        if (guessArr[i] === targetArr[i]) {
+          result[i] = 'correct';
+          targetArr[i] = null;
+        }
       }
 
-      const result = evaluateExpression(state.currentInput, config);
-      if (result !== config.target) {
-        state.message = `Equals ${result}, but target is ${config.target}!`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        return;
+      // Second pass: Present in wrong position
+      for (let i = 0; i < eqLength; i++) {
+        if (result[i] !== 'correct' && targetArr.includes(guessArr[i])) {
+          result[i] = 'present';
+          targetArr[targetArr.indexOf(guessArr[i])] = null;
+        }
       }
 
-      const guess = [...state.currentInput];
-      state.submittedGuesses.push(guess);
-      state.currentInput = new Array(config.secretDigits.length).fill('');
-      state.selectedIndex = 0;
+      // Apply styles to tiles and keyboard
+      for (let i = 0; i < eqLength; i++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${i}`);
+        tile.classList.add(result[i]);
+        updateKeyColor(guessArr[i], result[i]);
+      }
 
-      const currentAttempt = state.submittedGuesses.length - 1;
-      const feedback = evaluateGuessFeedback(guess, config.secretDigits);
-
-      config.blankIndices.forEach((colIdx, i) => {
-        const tile = document.getElementById(`tile-${currentAttempt}-${colIdx}`);
-        tile.classList.remove('editable', 'selected');
-        tile.classList.add(feedback[i]);
-      });
-
-      attemptsDisplay.textContent = `${state.submittedGuesses.length}/${MAX_ATTEMPTS}`;
-      updateKeypadColors();
-
-      if (guess.join('') === config.secretDigits.join('')) {
-        state.message = '🎉 Splendid! You solved today\'s puzzle!';
-        state.messageColor = '#28a745';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        state.isGameOver = true;
-        updateStats(true, currentAttempt);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
-      } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
-        state.message = `Game Over! Solution: ${config.secretDigits.join('')}`;
-        state.messageColor = '#dc3545';
-        messageEl.style.color = state.messageColor;
-        messageEl.textContent = state.message;
-        state.isGameOver = true;
-        updateStats(false, 0);
-        setTimeout(() => modalOverlay.classList.add('open'), 1200);
+      if (currentGuess === targetEquation) {
+        showMessage("🎉 Excellent! You solved today's equation!");
+        gameOver = true;
+        recordStats(true);
       } else {
-        setupActiveRowInteractivity();
-        updateActiveRowDisplay();
+        currentAttempt++;
+        currentGuess = "";
+
+        if (currentAttempt >= maxAttempts) {
+          showMessage(`Game Over! Today's equation was: ${targetEquation}`);
+          gameOver = true;
+          recordStats(false);
+        }
       }
     }
 
-    // Modal Event Listeners
-    statsBtn.addEventListener('click', () => {
-      renderStatsModal();
-      modalOverlay.classList.add('open');
-    });
+    function updateKeyColor(char, state) {
+      const btn = document.querySelector(`.key[data-key="${char}"]`);
+      if (!btn) return;
 
-    closeModalBtn.addEventListener('click', () => {
-      modalOverlay.classList.remove('open');
-    });
+      if (state === 'correct') {
+        btn.className = 'key correct';
+      } else if (state === 'present' && !btn.classList.contains('correct')) {
+        btn.className = 'key present';
+      } else if (state === 'absent' && !btn.classList.contains('correct') && !btn.classList.contains('present')) {
+        btn.className = 'key absent';
+      }
+    }
 
-    helpBtn.addEventListener('click', () => {
-      helpModalOverlay.classList.add('open');
-    });
+    function resetKeyColors() {
+      document.querySelectorAll('.key').forEach(btn => {
+        btn.classList.remove('correct', 'present', 'absent');
+      });
+    }
 
-    closeHelpModalBtn.addEventListener('click', () => {
-      helpModalOverlay.classList.remove('open');
-    });
+    function showMessage(msg) {
+      document.getElementById('message').textContent = msg;
+    }
 
-    // Difficulty Tab Switching
-    diffButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        diffButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    function getStats() {
+      const data = localStorage.getItem('pemdas_stats');
+      return data ? JSON.parse(data) : { played: 0, wins: 0, streak: 0, maxStreak: 0 };
+    }
 
-        currentMode = btn.getAttribute('data-mode');
-        renderBoard();
+    function recordStats(isWin) {
+      const stats = getStats();
+      stats.played += 1;
+      if (isWin) {
+        stats.wins += 1;
+        stats.streak += 1;
+        if (stats.streak > stats.maxStreak) stats.maxStreak = stats.streak;
+      } else {
+        stats.streak = 0;
+      }
+      localStorage.setItem('pemdas_stats', JSON.stringify(stats));
+    }
+
+    function renderStats() {
+      const stats = getStats();
+      document.getElementById('stat-played').textContent = stats.played;
+      const rate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
+      document.getElementById('stat-winrate').textContent = `${rate}%`;
+      document.getElementById('stat-streak').textContent = stats.streak;
+      document.getElementById('stat-maxstreak').textContent = stats.maxStreak;
+    }
+
+    // Event Listeners
+    document.querySelectorAll('.key').forEach(keyBtn => {
+      keyBtn.addEventListener('click', () => {
+        handleKeyPress(keyBtn.getAttribute('data-key'));
       });
     });
 
-    // Keypad Click Listeners
-    document.querySelectorAll('.key').forEach(btn => {
-      btn.addEventListener('click', () => {
-        handleKeyPress(btn.getAttribute('data-key'));
+    document.querySelectorAll('.level-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        currentLevel = parseInt(e.target.getAttribute('data-level'), 10);
+        initGame();
       });
     });
 
-    // Physical Keyboard Listener
+    document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('open'));
+    document.getElementById('close-help').addEventListener('click', () => document.getElementById('help-modal').classList.remove('open'));
+    document.getElementById('stats-btn').addEventListener('click', () => { renderStats(); document.getElementById('stats-modal').classList.add('open'); });
+    document.getElementById('close-stats').addEventListener('click', () => document.getElementById('stats-modal').classList.remove('open'));
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace') handleKeyPress('BACKSPACE');
-      else if (e.key === 'Enter') handleKeyPress('ENTER');
-      else if (/^[0-9]$/.test(e.key)) handleKeyPress(e.key);
+      let key = e.key.toUpperCase();
+      if (key === 'ENTER' || key === 'BACKSPACE') {
+        handleKeyPress(key);
+      } else if (key === 'DELETE') {
+        handleKeyPress('BACKSPACE');
+      } else if (/^[0-9+\-*/()=]$/.test(key)) {
+        handleKeyPress(key);
+      }
     });
 
-    // Initial Start
-    checkDailyReset();
-    renderBoard();
-    renderStatsModal();
+    initGame();
   </script>
 </body>
 </html>
