@@ -1182,6 +1182,7 @@
         messageEl.textContent = state.message;
         state.isGameOver = true;
         updateStats(true, currentAttempt);
+        renderStatsModal();
         setTimeout(() => modalOverlay.classList.add('open'), 1200);
       } else if (state.submittedGuesses.length >= MAX_ATTEMPTS) {
         state.message = `Game Over! Solution: ${config.secretDigits.join('')}`;
@@ -1190,6 +1191,7 @@
         messageEl.textContent = state.message;
         state.isGameOver = true;
         updateStats(false, 0);
+        renderStatsModal();
         setTimeout(() => modalOverlay.classList.add('open'), 1200);
       } else {
         setupActiveRowInteractivity();
