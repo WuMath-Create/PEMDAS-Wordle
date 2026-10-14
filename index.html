@@ -564,7 +564,6 @@
 
     function getYesterdaySeed() {
       const now = new Date();
-      // Subtract 24 hours to get yesterday's date in EST
       const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
       const estDateStr = yesterday.toLocaleDateString('en-US', {
         timeZone: 'America/New_York',
@@ -587,22 +586,28 @@
     function generateDailyPuzzles() {
       const seed = getTodaySeed();
 
-      // EASY: Basic add/subtract
+      // EASY (Level 1): Basic add/subtract (Max 2 digits)
       const randEasy = createRandom(seed + 100);
-      const dE = [
-        Math.floor(randEasy() * 8) + 1,
-        Math.floor(randEasy() * 8) + 1, 
-        Math.floor(randEasy() * 8) + 1
-      ].map(String);
+      let dE1 = Math.floor(randEasy() * 8) + 1;
+      let dE2 = Math.floor(randEasy() * 8) + 1;
+      let dE3 = Math.floor(randEasy() * 8) + 1;
+
+      // Ensure positive result and capped at 2 digits (<= 99)
+      if (dE1 + dE2 - dE3 < 0) {
+        const temp = dE1;
+        dE1 = dE3;
+        dE3 = temp;
+      }
+      const dE = [dE1, dE2, dE3].map(String);
       const targetEasy = parseInt(dE[0]) + parseInt(dE[1]) - parseInt(dE[2]);
 
-      // MEDIUM: Daily rotating operators (+, -, *, /)
+      // MEDIUM (Level 2): Daily rotating operators (Max 2 digits)
       const randMed = createRandom(seed + 200);
       const medOpList = ['+', '-', '*', '/'];
-      const opM1 = medOpList[Math.floor(randMed() * medOpList.length)];
+      let opM1 = medOpList[Math.floor(randMed() * medOpList.length)];
       let opM2 = medOpList[Math.floor(randMed() * medOpList.length)];
 
-      const dM = [
+      let dM = [
         Math.floor(randMed() * 3) + 1,
         Math.floor(randMed() * 9) + 1,
         Math.floor(randMed() * 8) + 1,
@@ -613,36 +618,43 @@
       let symbolM1 = opM1 === '*' ? '×' : (opM1 === '/' ? '÷' : opM1);
       let symbolM2 = opM2 === '*' ? '×' : (opM2 === '/' ? '÷' : opM2);
 
-      // Simple solver to ensure valid integer target for Level 2
-      const valM1 = parseInt(dM[0] + dM[1]);
-      const n2 = parseInt(dM[2]);
-      const n3 = parseInt(dM[3]);
+      let valM1 = parseInt(dM[0] + dM[1]);
+      let n2 = parseInt(dM[2]);
+      let n3 = parseInt(dM[3]);
 
-      // Calculate level 2 target safely
       let exprMStr = `${valM1} ${opM1} ${n2} ${opM2} ${n3}`;
       try {
         let res = Function(`"use strict"; return (${exprMStr})`)();
-        if (!Number.isInteger(res) || res < 0 || Math.abs(res) > 999) {
-          // Fallback to multiplication and addition
-          opM2 = '*';
-          symbolM2 = '×';
-          exprMStr = `${valM1} + ${n2} * ${n3}`;
+        // Capped target strictly between 0 and 99
+        if (!Number.isInteger(res) || res < 0 || res > 99) {
+          opM1 = '+';
+          opM2 = '-';
+          symbolM1 = '+';
+          symbolM2 = '-';
+          dM = ['1', '2', '5', '3'];
+          valM1 = 12;
+          n2 = 5;
+          n3 = 3;
+          exprMStr = `${valM1} + ${n2} - ${n3}`;
           res = Function(`"use strict"; return (${exprMStr})`)();
         }
         targetMed = res;
       } catch {
-        targetMed = valM1 + (n2 * n3);
+        opM1 = '+';
+        opM2 = '-';
+        symbolM1 = '+';
+        symbolM2 = '-';
+        dM = ['1', '2', '5', '3'];
+        targetMed = 14;
       }
 
       // HARD: Level 3 includes exponents as attached superscripts
       const randHard = createRandom(seed + 300);
       const level3Templates = [
-        // Template 1: Digits with attached exponent
         {
           exp: '2',
           targetFunc: (d) => Math.pow(parseInt(d[0]), 2) + (parseInt(d[1]) * parseInt(d[2])),
           buildExpr: (d) => `Math.pow(${d[0]}, 2) + (${d[1]} * ${d[2]})`,
-          // Template contains items. Exponent is attached to the blank tile prior to it via exponentMap.
           template: [
             { type: 'blank', exponent: '2' },
             { type: 'op', text: '+' },
@@ -652,7 +664,6 @@
           ],
           digitCount: 3
         },
-        // Template 2: Parentheses & multi-op
         {
           targetFunc: (d) => (parseInt(d[0]) + parseInt(d[1])) * parseInt(d[2]) - parseInt(d[3]),
           buildExpr: (d) => `(${d[0]} + ${d[1]}) * ${d[2]} - ${d[3]}`,
@@ -669,7 +680,6 @@
           ],
           digitCount: 4
         },
-        // Template 3: Exponent inside parenthesized term
         {
           targetFunc: (d) => Math.pow(parseInt(d[0]) + parseInt(d[1]), 2) - parseInt(d[2]),
           buildExpr: (d) => `Math.pow(${d[0]} + ${d[1]}, 2) - ${d[2]}`,
@@ -691,12 +701,11 @@
 
       const dH = [];
       for (let i = 0; i < chosenTmpl.digitCount; i++) {
-        dH.push(String(Math.floor(randHard() * 8) + 2)); // Avoid 0/1 for exponents
+        dH.push(String(Math.floor(randHard() * 8) + 2));
       }
 
       const targetHard = chosenTmpl.targetFunc(dH);
 
-      // Build template representation for grid rendering
       const hardGridTemplate = [];
       const hardBlankIndices = [];
 
@@ -716,7 +725,6 @@
         }
       });
 
-      // Add equality segment
       hardGridTemplate.push({ text: '=', isOperator: true });
       hardGridTemplate.push({ text: String(targetHard), isOperator: true });
 
@@ -799,9 +807,7 @@
         const lastPlayedDate = parseInt(lastPlayedDateStr, 10);
         const yesterdaySeed = getYesterdaySeed();
 
-        // If a new day has passed since last visit
         if (lastPlayedDate !== todaySeed) {
-          // If the player skipped one or more days, break the current streak
           if (lastPlayedDate < yesterdaySeed) {
             const stats = getStats();
             stats.currentStreak = 0;
@@ -810,7 +816,6 @@
           localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
         }
       } else {
-        // First time initialization
         localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
       }
     }
@@ -847,12 +852,10 @@
     const targetDisplay = document.getElementById('target-display');
     const attemptsDisplay = document.getElementById('attempts-display');
     
-    // Stats elements
     const statsBtn = document.getElementById('stats-btn');
     const closeModalBtn = document.getElementById('close-modal');
     const modalOverlay = document.getElementById('modal-overlay');
 
-    // Help elements
     const helpBtn = document.getElementById('help-btn');
     const closeHelpModalBtn = document.getElementById('close-help-modal');
     const helpModalOverlay = document.getElementById('help-modal-overlay');
@@ -980,7 +983,6 @@
         rowEl.className = 'row';
 
         config.template.forEach((item, c) => {
-          // Render parentheses as plain text elements rather than grey tile boxes
           if (item.isOperator && (item.text === '(' || item.text === ')')) {
             const parenEl = document.createElement('div');
             parenEl.className = 'tile-paren';
@@ -1006,7 +1008,6 @@
             tile.textContent = item.text;
           }
 
-          // Attach exponent superscript badge directly to the top right of tile without grey box
           if (item.exponent) {
             const expSpan = document.createElement('span');
             expSpan.className = 'tile-exponent';
@@ -1025,7 +1026,6 @@
         config.blankIndices.forEach((colIdx, i) => {
           const tile = document.getElementById(`tile-${rowIndex}-${colIdx}`);
           
-          // Preserve exponent element if present
           const expSpan = tile.querySelector('.tile-exponent');
           tile.textContent = guess[i];
           if (expSpan) tile.appendChild(expSpan);
@@ -1141,7 +1141,6 @@
         return;
       }
 
-      // Prevent leading zeros in two-digit configurations
       if (currentMode === 'medium' && state.currentInput[0] === '0') {
         state.message = "A two digit number cannot have a leading 0";
         state.messageColor = '#dc3545';
@@ -1198,7 +1197,6 @@
       }
     }
 
-    // Modal Event Listeners
     statsBtn.addEventListener('click', () => {
       renderStatsModal();
       modalOverlay.classList.add('open');
@@ -1216,7 +1214,6 @@
       helpModalOverlay.classList.remove('open');
     });
 
-    // Difficulty Tab Switching
     diffButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         diffButtons.forEach(b => b.classList.remove('active'));
@@ -1227,21 +1224,18 @@
       });
     });
 
-    // Keypad Click Listeners
     document.querySelectorAll('.key').forEach(btn => {
       btn.addEventListener('click', () => {
         handleKeyPress(btn.getAttribute('data-key'));
       });
     });
 
-    // Physical Keyboard Listener
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace') handleKeyPress('BACKSPACE');
       else if (e.key === 'Enter') handleKeyPress('ENTER');
       else if (/^[0-9]$/.test(e.key)) handleKeyPress(e.key);
     });
 
-    // Initial Start
     checkDailyReset();
     renderBoard();
     renderStatsModal();
