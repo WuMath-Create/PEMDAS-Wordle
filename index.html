@@ -799,27 +799,6 @@
     const DIFFICULTIES = generateDailyPuzzles();
     let currentMode = 'medium';
 
-    function checkDailyReset() {
-      const todaySeed = getTodaySeed();
-      const lastPlayedDateStr = localStorage.getItem('pemdas_wordle_last_date');
-      
-      if (lastPlayedDateStr) {
-        const lastPlayedDate = parseInt(lastPlayedDateStr, 10);
-        const yesterdaySeed = getYesterdaySeed();
-
-        if (lastPlayedDate !== todaySeed) {
-          if (lastPlayedDate < yesterdaySeed) {
-            const stats = getStats();
-            stats.currentStreak = 0;
-            saveStats(stats);
-          }
-          localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-        }
-      } else {
-        localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
-      }
-    }
-
     const gameStates = {
       easy: {
         submittedGuesses: [],
@@ -846,6 +825,61 @@
         messageColor: '#dc3545'
       }
     };
+
+    function saveGameState() {
+      const payload = {
+        seed: getTodaySeed(),
+        currentMode: currentMode,
+        gameStates: gameStates
+      };
+      localStorage.setItem('pemdas_wordle_state', JSON.stringify(payload));
+    }
+
+    function loadGameState() {
+      const saved = localStorage.getItem('pemdas_wordle_state');
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.seed === getTodaySeed()) {
+          if (parsed.currentMode && gameStates[parsed.currentMode]) {
+            currentMode = parsed.currentMode;
+          }
+          if (parsed.gameStates) {
+            Object.keys(gameStates).forEach(mode => {
+              if (parsed.gameStates[mode]) {
+                gameStates[mode] = parsed.gameStates[mode];
+              }
+            });
+          }
+        } else {
+          localStorage.removeItem('pemdas_wordle_state');
+        }
+      } catch (e) {
+        console.error('Failed to load game state', e);
+      }
+    }
+
+    function checkDailyReset() {
+      const todaySeed = getTodaySeed();
+      const lastPlayedDateStr = localStorage.getItem('pemdas_wordle_last_date');
+      
+      if (lastPlayedDateStr) {
+        const lastPlayedDate = parseInt(lastPlayedDateStr, 10);
+        const yesterdaySeed = getYesterdaySeed();
+
+        if (lastPlayedDate !== todaySeed) {
+          if (lastPlayedDate < yesterdaySeed) {
+            const stats = getStats();
+            stats.currentStreak = 0;
+            saveStats(stats);
+          }
+          localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
+          localStorage.removeItem('pemdas_wordle_state');
+        }
+      } else {
+        localStorage.setItem('pemdas_wordle_last_date', String(todaySeed));
+      }
+    }
 
     const gridEl = document.getElementById('grid');
     const messageEl = document.getElementById('message');
@@ -968,6 +1002,14 @@
       const config = DIFFICULTIES[currentMode];
       const state = gameStates[currentMode];
 
+      diffButtons.forEach(btn => {
+        if (btn.getAttribute('data-mode') === currentMode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
       if (state.currentInput.length !== config.secretDigits.length) {
         state.currentInput = new Array(config.secretDigits.length).fill('');
       }
@@ -1054,6 +1096,7 @@
           tile.onclick = () => {
             state.selectedIndex = slotIdx;
             updateActiveRowDisplay();
+            saveGameState();
           };
         }
       });
@@ -1097,6 +1140,7 @@
           state.currentInput[state.selectedIndex] = '';
         }
         updateActiveRowDisplay();
+        saveGameState();
 
       } else if (key === 'ENTER') {
         submitGuess();
@@ -1115,6 +1159,7 @@
         }
 
         updateActiveRowDisplay();
+        saveGameState();
       }
     }
 
@@ -1138,6 +1183,7 @@
         state.messageColor = '#dc3545';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
+        saveGameState();
         return;
       }
 
@@ -1146,6 +1192,7 @@
         state.messageColor = '#dc3545';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
+        saveGameState();
         return;
       }
 
@@ -1155,6 +1202,7 @@
         state.messageColor = '#dc3545';
         messageEl.style.color = state.messageColor;
         messageEl.textContent = state.message;
+        saveGameState();
         return;
       }
 
@@ -1197,6 +1245,8 @@
         setupActiveRowInteractivity();
         updateActiveRowDisplay();
       }
+
+      saveGameState();
     }
 
     statsBtn.addEventListener('click', () => {
@@ -1223,6 +1273,7 @@
 
         currentMode = btn.getAttribute('data-mode');
         renderBoard();
+        saveGameState();
       });
     });
 
@@ -1239,6 +1290,7 @@
     });
 
     checkDailyReset();
+    loadGameState();
     renderBoard();
     renderStatsModal();
   </script>
